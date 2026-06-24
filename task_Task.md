@@ -1,0 +1,6 @@
+- `[ ]` Create `api/admin_users.php` to fetch and delete users.
+- `[ ]` Create `api/admin_reviews.php` to fetch and delete reviews.
+- `[ ]` Modify `admin.php` to add navigation tabs for Users and Reviews.
+- `[ ]` Modify `admin.php` to add section containers and DataTables for Users and Reviews.
+- `[ ]` Modify `admin.js` to implement data fetching, rendering, and delete functions for both new sections.
+- `[ ]` Bump CSS/JS cache versions and verify changes.

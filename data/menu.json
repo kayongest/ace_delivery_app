@@ -1,0 +1,770 @@
+[
+    {
+        "id": 101,
+        "name": "Mashed Cheese Potatoes",
+        "price": 2500,
+        "category": "sides",
+        "description": "Coated and fried",
+        "image": "images\/frenchFriesSalad.jpg"
+    },
+    {
+        "id": 102,
+        "name": "Beef Stir Fry",
+        "price": 5000,
+        "category": "sides",
+        "description": "Beef meat, onions, green pepper, served with chips",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 103,
+        "name": "French Fries",
+        "price": 3000,
+        "category": "sides",
+        "description": "Chips with salad",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 104,
+        "name": "Fried Chicken Wings",
+        "price": 5000,
+        "category": "sides",
+        "description": "Served with chips or salad",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 105,
+        "name": "Chicken Leg",
+        "price": 7000,
+        "category": "sides",
+        "description": "Served with chips or salad",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 106,
+        "name": "Chicken Brochette",
+        "price": 4000,
+        "category": "sides",
+        "description": "",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 107,
+        "name": "Beef Brochette",
+        "price": 3000,
+        "category": "sides",
+        "description": "",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 201,
+        "name": "Meat ball",
+        "price": 1000,
+        "category": "sides",
+        "description": "Display item",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 202,
+        "name": "Samosa (beef)",
+        "price": 1000,
+        "category": "sides",
+        "description": "Display item",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 203,
+        "name": "Chapati",
+        "price": 500,
+        "category": "sides",
+        "description": "Display item",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 204,
+        "name": "Potato samosa",
+        "price": 300,
+        "category": "sides",
+        "description": "Display item",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 301,
+        "name": "Ace Burger",
+        "price": 7000,
+        "category": "burgers",
+        "description": "Lettuce, tomato, onions, sausage, beef, fried egg, cucumber",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 302,
+        "name": "Chicken Burger",
+        "price": 6000,
+        "category": "burgers",
+        "description": "Tomato, chicken, onions, lettuce (served with chips), cheese",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 303,
+        "name": "Beef Burger",
+        "price": 5000,
+        "category": "burgers",
+        "description": "Tomato, onions, beef, lettuce (served with chips), cheese",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 304,
+        "name": "Giant Burger",
+        "price": 7000,
+        "category": "burgers",
+        "description": "Tomato, onions, lettuce, double meat, cheese",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 401,
+        "name": "AB mango",
+        "price": 5000,
+        "category": "smoothies",
+        "description": "Smoothie",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 402,
+        "name": "AB hills",
+        "price": 5500,
+        "category": "smoothies",
+        "description": "Smoothie",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 403,
+        "name": "AB blend",
+        "price": 5000,
+        "category": "smoothies",
+        "description": "Smoothie",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 404,
+        "name": "Mango banana",
+        "price": 4000,
+        "category": "smoothies",
+        "description": "Smoothie",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 405,
+        "name": "Banana berries",
+        "price": 4500,
+        "category": "smoothies",
+        "description": "Smoothie",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 406,
+        "name": "Fanta",
+        "price": 1500,
+        "category": "smoothies",
+        "description": "",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 407,
+        "name": "Mineral water 1.5L",
+        "price": 1500,
+        "category": "smoothies",
+        "description": "",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 408,
+        "name": "Mineral water 500ML",
+        "price": 1000,
+        "category": "smoothies",
+        "description": "",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 409,
+        "name": "Juice",
+        "price": 1500,
+        "category": "smoothies",
+        "description": "",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 501,
+        "name": "Turmeric shot (bottle)",
+        "price": 10000,
+        "category": "shots",
+        "description": "Bottle refill is just 5k",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 502,
+        "name": "Ginger shot (bottle)",
+        "price": 10000,
+        "category": "shots",
+        "description": "Bottle refill is just 5k",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 503,
+        "name": "Green detox shot (bottle)",
+        "price": 10000,
+        "category": "shots",
+        "description": "Bottle refill is just 5k",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 504,
+        "name": "Chosen shot (bottle)",
+        "price": 10000,
+        "category": "shots",
+        "description": "Bottle refill is just 5k",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 601,
+        "name": "Mango",
+        "price": 3000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 602,
+        "name": "Passion",
+        "price": 2500,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 603,
+        "name": "Papaya",
+        "price": 3000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 604,
+        "name": "Orange",
+        "price": 3000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 605,
+        "name": "Pineapple",
+        "price": 2500,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 606,
+        "name": "Tree-tomato",
+        "price": 3000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 607,
+        "name": "Lemon",
+        "price": 2500,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 608,
+        "name": "Cocktail juice",
+        "price": 5000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 609,
+        "name": "Detox juice",
+        "price": 5000,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 610,
+        "name": "Apple",
+        "price": 2500,
+        "category": "smoothies",
+        "description": "Fresh juice",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 701,
+        "name": "Vanilla shakes",
+        "price": 4000,
+        "category": "shakes",
+        "description": "Milk shake",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 702,
+        "name": "Strawberry Shakes",
+        "price": 4000,
+        "category": "shakes",
+        "description": "Milk shake",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 703,
+        "name": "Chocolate shakes",
+        "price": 4000,
+        "category": "shakes",
+        "description": "Milk shake",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 704,
+        "name": "Nutella shake",
+        "price": 6000,
+        "category": "shakes",
+        "description": "Milk shake",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 801,
+        "name": "Ice Shaken",
+        "price": 4000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 802,
+        "name": "Iced Caramel",
+        "price": 4000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 803,
+        "name": "Iced Mocha",
+        "price": 4000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 804,
+        "name": "Iced Latte",
+        "price": 3000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 805,
+        "name": "Iced Tea",
+        "price": 2500,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 806,
+        "name": "Iced Americano",
+        "price": 2500,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 807,
+        "name": "Iced Espresso",
+        "price": 2500,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 808,
+        "name": "Iced Chocolate",
+        "price": 4000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 809,
+        "name": "Iced Hibiscus",
+        "price": 3000,
+        "category": "iced",
+        "description": "Iced drink",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 901,
+        "name": "Vanilla Ice Cream",
+        "price": 2000,
+        "category": "shakes",
+        "description": "Ice Cream",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 902,
+        "name": "Strawberry Ice Cream",
+        "price": 2000,
+        "category": "shakes",
+        "description": "Ice Cream",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 903,
+        "name": "Chocolate Ice Cream",
+        "price": 2000,
+        "category": "shakes",
+        "description": "Ice Cream",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1001,
+        "name": "Cappuccino",
+        "price": 2500,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1002,
+        "name": "Cafe Latte",
+        "price": 2500,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1003,
+        "name": "Cortado",
+        "price": 2500,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1004,
+        "name": "Flat white",
+        "price": 2500,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1005,
+        "name": "Caramel latte",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1006,
+        "name": "Vanilla latte",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1007,
+        "name": "Cafe mocha",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1008,
+        "name": "Hot chocolate",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1009,
+        "name": "Cafe au lait",
+        "price": 2500,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1010,
+        "name": "Americano",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1011,
+        "name": "Regular coffee",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1012,
+        "name": "Espresso",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1013,
+        "name": "Lungo",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1014,
+        "name": "Ristretto",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1015,
+        "name": "Espresso macchiato",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1016,
+        "name": "Hot milk",
+        "price": 2000,
+        "category": "coffee",
+        "description": "Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1101,
+        "name": "V60",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Drip Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1102,
+        "name": "Chemex",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Drip Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1103,
+        "name": "Aeropress",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Drip Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1104,
+        "name": "French press",
+        "price": 3000,
+        "category": "coffee",
+        "description": "Drip Coffee",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1201,
+        "name": "African tea",
+        "price": 2500,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1202,
+        "name": "African coffee",
+        "price": 2500,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/void_espresso.png"
+    },
+    {
+        "id": 1203,
+        "name": "Russian tea",
+        "price": 2500,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1204,
+        "name": "Spiced tea",
+        "price": 3000,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1205,
+        "name": "Minty tea",
+        "price": 2000,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1206,
+        "name": "Black tea",
+        "price": 1500,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1207,
+        "name": "Vanilla tea",
+        "price": 2000,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1208,
+        "name": "Hibiscus tea",
+        "price": 2000,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1209,
+        "name": "Green tea",
+        "price": 2000,
+        "category": "tea",
+        "description": "Tea",
+        "image": "images\/neon_iced_latte.png"
+    },
+    {
+        "id": 1301,
+        "name": "Ace Pizza",
+        "price": 10000,
+        "category": "pizza",
+        "description": "Onions, green pepper, tomato, sausage, ham, meat, egg, Cheese",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 1302,
+        "name": "Margherita Pizza",
+        "price": 6000,
+        "category": "pizza",
+        "description": "Cheese, tomato, oregano",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 1303,
+        "name": "Meat Lovers Pizza",
+        "price": 8000,
+        "category": "pizza",
+        "description": "Onions, chicken, meat, sausage, tomato, cheese, green pepper",
+        "image": "images\/ace_cafe.png"
+    },
+    {
+        "id": 1401,
+        "name": "Spanish Omelette",
+        "price": 3000,
+        "category": "omelettes",
+        "description": "Green pepper, onions, beaten egg, tomato",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1402,
+        "name": "Special Omelette",
+        "price": 4000,
+        "category": "omelettes",
+        "description": "chips, onions, tomato, beaten eggs, meat, green pepper",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1403,
+        "name": "Meat Omelette",
+        "price": 5000,
+        "category": "omelettes",
+        "description": "onions, meat\/sausage, green pepper, tomato, eggs",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1404,
+        "name": "Capati Omelette",
+        "price": 2000,
+        "category": "omelettes",
+        "description": "onions, tomatoes, eggs, capati",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1501,
+        "name": "Vegetable Sandwich",
+        "price": 4000,
+        "category": "sandwiches",
+        "description": "onions, tomato, green pepper, avocado, lettuce served with chips",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1502,
+        "name": "Croque Madame",
+        "price": 5500,
+        "category": "sandwiches",
+        "description": "Ham, cheese, egg, toasted bread with chips",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1503,
+        "name": "Croque Monsieur",
+        "price": 5000,
+        "category": "sandwiches",
+        "description": "Ham, cheese, toasted bread with chips",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1504,
+        "name": "Ace Sandwich",
+        "price": 6000,
+        "category": "sandwiches",
+        "description": "Meat, onions, green pepper, tomato, ham",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1601,
+        "name": "Chicken Wraps",
+        "price": 5000,
+        "category": "sandwiches",
+        "description": "Onions, tomato, chicken, carrots (served with chips)",
+        "image": "images\/cyber_croissant.png"
+    },
+    {
+        "id": 1602,
+        "name": "Beef Wraps",
+        "price": 5000,
+        "category": "sandwiches",
+        "description": "Onions, tomato, beef, green pepper, carrots (served with chips)",
+        "image": "images\/cyber_croissant.png"
+    }
+]

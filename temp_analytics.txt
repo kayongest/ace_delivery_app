@@ -1,0 +1,101 @@
+>         <div id="section-analytics" class="admin-section" style="display: none;">
+              <header class="dashboard-header" style="flex-wrap: wrap;">
+                  <div class="dashboard-title-area">
+                      <h2>Analytics Overview</h2>
+                      <div class="dashboard-stats">
+                          <span class="stat-highlight">Business Insights</span>
+                      </div>
+                  </div>
+                  <div class="dashboard-actions">
+                      <select id="analytics-date-filter" class="form-input" style="width: auto; cursor: pointer;">
+                          <option value="today">Today</option>
+                          <option value="7days">Last 7 Days</option>
+                          <option value="month">This Month</option>
+                          <option value="alltime">All Time</option>
+                      </select>
+                  </div>
+              </header>
+  
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                  
+                  <!-- Card 1: Total Revenue (#2D2424) -->
+                  <div style="background-color: #2D2424; border-radius: 6px; overflow: hidden; position: relative; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="padding: 20px;">
+                          <h3 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; opacity: 0.8; font-weight: 600;">Total Revenue</h3>
+                          <p id="stat-revenue" style="font-size: 32px; font-weight: bold; margin: 0;">RWF 0</p>
+                          <i class="ph-fill ph-coins" style="position: absolute; right: 15px; top: 15px; font-size: 60px; opacity: 0.15; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                      </div>
+                      <a href="#" style="display: block; background: rgba(0,0,0,0.2); padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+                          View Detail <i class="ph ph-arrow-circle-right" style="vertical-align: middle; margin-left: 5px;"></i>
+                      </a>
+                  </div>
+  
+                  <!-- Card 2: Total Orders (#5C3D2E) -->
+                  <div style="background-color: #5C3D2E; border-radius: 6px; overflow: hidden; position: relative; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="padding: 20px;">
+                          <h3 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; opacity: 0.8; font-weight: 600;">Total Orders</h3>
+                          <p id="stat-orders" style="font-size: 32px; font-weight: bold; margin: 0;">0</p>
+                          <i class="ph-fill ph-shopping-cart" style="position: absolute; right: 15px; top: 15px; font-size: 60px; opacity: 0.15; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                      </div>
+                      <a href="#" style="display: block; background: rgba(0,0,0,0.2); padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+                          View Detail <i class="ph ph-arrow-circle-right" style="vertical-align: middle; margin-left: 5px;"></i>
+                      </a>
+                  </div>
+  
+                  <!-- Card 3: Avg Order Value (#B85C38) -->
+                  <div style="background-color: #B85C38; border-radius: 6px; overflow: hidden; position: relative; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="padding: 20px;">
+                          <h3 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; opacity: 0.8; font-weight: 600;">Avg Order Value</h3>
+                          <p id="stat-aov" style="font-size: 32px; font-weight: bold; margin: 0;">RWF 0</p>
+                          <i class="ph-fill ph-receipt" style="position: absolute; right: 15px; top: 15px; font-size: 60px; opacity: 0.15; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                      </div>
+                      <a href="#" style="display: block; background: rgba(0,0,0,0.2); padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+                          View Detail <i class="ph ph-arrow-circle-right" style="vertical-align: middle; margin-left: 5px;"></i>
+                      </a>
+                  </div>
+  
+                  <!-- Card 4: Total Users (#E0C097) -->
+                  <div style="background-color: #E0C097; border-radius: 6px; overflow: hidden; position: relative; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="padding: 20px;">
+                          <h3 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; opacity: 0.8; font-weight: 600; color: rgba(0,0,0,0.6);">Total Users</h3>
+                          <p style="font-size: 32px; font-weight: bold; margin: 0; color: #111;"><span id="stat-users">0</span> <span id="stat-new-users" style="font-size: 16px; color: #1e702e; font-weight: bold; margin-left: 5px;">(+0)</span></p>
+                          <i class="ph-fill ph-users" style="position: absolute; right: 15px; top: 15px; font-size: 60px; color: #000; opacity: 0.1; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                      </div>
+                      <a href="#" style="display: block; background: rgba(0,0,0,0.1); padding: 8px 15px; color: rgba(0,0,0,0.7); text-decoration: none; font-size: 13px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.15)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">
+                          View Detail <i class="ph ph-arrow-circle-right" style="vertical-align: middle; margin-left: 5px;"></i>
+                      </a>
+                  </div>
+  
+              </div>
+  
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+                  <div class="card glass" style="padding: 20px; min-height: 300px;">
+                      <h3 style="margin: 0 0 20px 0; color: #1A3B47; font-family: 'Playfair Display', serif;">Revenue Over Time</h3>
+                      <div style="position: relative; height: 300px; width: 100%;">
+                          <canvas id="revenueChart"></canvas>
+                      </div>
+                  </div>
+                  
+                  <div class="card glass" style="padding: 20px; min-height: 300px; display: flex; flex-direction: column;">
+                      <h3 style="margin: 0 0 20px 0; color: #1A3B47; font-family: 'Playfair Display', serif;">Top Selling Items</h3>
+                      <ul id="top-items-list" style="list-style: none; padding: 0; margin: 0; flex-grow: 1;">
+                          <!-- populated by JS -->
+                      </ul>
+                      
+                      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ccc;">
+                          <h3 style="margin: 0 0 5px 0; color: #8c9ea6; font-size: 14px; text-transform: uppercase;">Most Popular Category</h3>
+                          <p id="stat-popular-cat" style="font-size: 20px; font-weight: bold; text-transform: capitalize; color: #c42d2d; margin: 0;">None</p>
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="card glass" style="padding: 20px;">
+                  <h3 style="margin: 0 0 20px 0; color: #1A3B47; font-family: 'Playfair Display', serif;">Orders Over Time</h3>
+                  <div style="position: relative; height: 200px; width: 100%;">
+                      <canvas id="ordersChart"></canvas>
+                  </div>
+              </div>
+          </div>
+      </div>
+  
+      <!-- Modal for Add/Edit -->

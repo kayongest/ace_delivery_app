@@ -1,0 +1,7 @@
+- [x] Extract `menuData` from `app.js` to `data/menu.json`
+- [x] Create `api/menu.php` to handle CRUD operations
+- [x] Modify `app.js` to fetch from `api/menu.php`
+- [x] Create `admin.html` dashboard
+- [x] Create `admin.js` logic
+- [x] Create `admin.css` styling
+- [x] Test CRUD capabilities

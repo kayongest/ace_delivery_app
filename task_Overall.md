@@ -1,0 +1,29 @@
+- [x] **Database Setup**
+  - [x] Create `db_update_auth.php` to alter `users` and `orders` tables.
+  - [x] Run the database script.
+- [x] **Backend APIs**
+  - [x] Create `api/auth/register.php`
+  - [x] Create `api/auth/login.php`
+  - [x] Create `api/auth/logout.php`
+  - [x] Create `api/auth/me.php`
+  - [x] Update `api/checkout.php` to attach `user_id` if logged in.
+- [x] **Frontend UI (`index.html`, `app.js`, `styles.css`)**
+  - [x] Add Auth Modal (Login/Register tabs) to `index.html`.
+  - [x] Add My Orders Modal to `index.html`.
+  - [x] Update Navbar to toggle between "Sign In" and "My Account".
+  - [x] Update `app.js` to handle Auth API calls, session state, and UI updates.
+  - [x] Auto-fill Checkout form based on logged-in user profile.
+- [x] **Digital Order Receipts**
+  - [x] Create `receipt.php` (Thermal receipt layout & styling).
+  - [x] Update Customer "My Orders" to link to receipt.
+  - [x] Update Admin Dashboard "Orders" to link to receipt.
+  - [x] Link receipt upon successful checkout.
+- [x] **Advanced Admin Analytics**
+  - [x] Create `api/analytics.php` for aggregated metrics and top items.
+  - [x] Update `admin.php` with Analytics tab, KPI cards, and Chart.js integration.
+  - [x] Update `admin.js` to handle data fetching, date filtering, and rendering Line/Bar charts.
+- [x] **Final Polish & User Profiles**
+  - [x] Add `profile_image` to `users` table via migration.
+  - [x] Create `api/auth/profile.php` for profile CRUD.
+  - [x] Update `index.html` and `styles.css` with Profile Modal and Toast UI.
+  - [x] Update `app.js` and `admin.js` to use AJAX updates and Toasts.

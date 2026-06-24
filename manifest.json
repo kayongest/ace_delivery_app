@@ -1,0 +1,21 @@
+{
+  "name": "Ace Cafe Delivery",
+  "short_name": "Ace Cafe",
+  "description": "Order authentic Yemeni spiced coffee and pastries.",
+  "start_url": "/cafe_delivery/index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#e63946",
+  "icons": [
+    {
+      "src": "images/ace_cafe_logo_circle.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/ace_cafe_logo_circle.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
