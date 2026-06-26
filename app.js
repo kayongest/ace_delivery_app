@@ -487,19 +487,23 @@ async function initApp() {
 initApp();
 // Theme Toggle Logic
 const themeToggleBtn = document.getElementById('theme-toggle');
+const navThemeToggleBtn = document.getElementById('theme-toggle-btn');
 const sunIcon = document.querySelector('.sun-icon');
 const moonIcon = document.querySelector('.moon-icon');
+const navThemeIcon = document.getElementById('theme-icon');
 
 function setTheme(theme) {
     if (theme === 'dark') {
         document.body.classList.add('dark-theme');
         if (sunIcon) sunIcon.style.display = 'none';
         if (moonIcon) moonIcon.style.display = 'block';
+        if (navThemeIcon) navThemeIcon.classList.replace('ph-moon', 'ph-sun');
         localStorage.setItem('theme', 'dark');
     } else {
         document.body.classList.remove('dark-theme');
         if (sunIcon) sunIcon.style.display = 'block';
         if (moonIcon) moonIcon.style.display = 'none';
+        if (navThemeIcon) navThemeIcon.classList.replace('ph-sun', 'ph-moon');
         localStorage.setItem('theme', 'light');
     }
 }
@@ -508,11 +512,16 @@ function setTheme(theme) {
 const savedTheme = localStorage.getItem('theme') || 'light';
 setTheme(savedTheme);
 
+function toggleTheme() {
+    const isDark = document.body.classList.contains('dark-theme');
+    setTheme(isDark ? 'light' : 'dark');
+}
+
 if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark-theme');
-        setTheme(isDark ? 'light' : 'dark');
-    });
+    themeToggleBtn.addEventListener('click', toggleTheme);
+}
+if (navThemeToggleBtn) {
+    navThemeToggleBtn.addEventListener('click', toggleTheme);
 }
 
 // Hero Carousel Logic
@@ -1326,31 +1335,3 @@ window.generatePDF = function(orderId, type) {
     html2pdf().set(opt).from(htmlString).save();
 };
 
-// Theme Toggle Logic
-document.addEventListener('DOMContentLoaded', () => {
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    const themeIcon = document.getElementById('theme-icon');
-    
-    // Check saved preference
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-theme');
-        if (themeIcon) {
-            themeIcon.classList.replace('ph-moon', 'ph-sun');
-        }
-    }
-
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
-            const isDark = document.body.classList.contains('dark-theme');
-            
-            if (isDark) {
-                localStorage.setItem('theme', 'dark');
-                if (themeIcon) themeIcon.classList.replace('ph-moon', 'ph-sun');
-            } else {
-                localStorage.setItem('theme', 'light');
-                if (themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
-            }
-        });
-    }
-});

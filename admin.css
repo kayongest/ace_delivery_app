@@ -816,9 +816,18 @@ body.dark-theme .admin-tab-btn.active {
 body.dark-theme .dashboard-header {
     border-bottom-color: var(--border-color);
 }
-body.dark-theme .modal-content {
+body.dark-theme .modal-content,
+body.dark-theme .admin-modal-content {
     background: var(--bg-card);
     color: var(--text-dark);
+}
+body.dark-theme .modal-content h2,
+body.dark-theme .modal-content h3,
+body.dark-theme .modal-content label,
+body.dark-theme .admin-modal-content h2,
+body.dark-theme .admin-modal-content h3,
+body.dark-theme .admin-modal-content label {
+    color: #fff !important;
 }
 body.dark-theme .form-control {
     background: rgba(0,0,0,0.2);
