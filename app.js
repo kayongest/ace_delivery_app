@@ -109,15 +109,50 @@ function renderMenu(items, page = 1) {
     }
 }
 
+function getServingSuggestion(item) {
+    if (!item) return '';
+    const name = item.name.toLowerCase();
+    const category = item.category.toLowerCase();
+    
+    if (name.includes('mashed cheese potatoes')) {
+        return 'Fried Chicken Wings';
+    } else if (name.includes('beef stir fry')) {
+        return 'Chapati';
+    } else if (name.includes('french fries')) {
+        return 'Fried Chicken Wings';
+    } else if (name.includes('chicken wings') || name.includes('chicken leg') || name.includes('brochette')) {
+        return 'French Fries';
+    } else if (category === 'coffee' || category === 'tea') {
+        return 'Samosa (beef)';
+    } else if (category === 'burgers' || category === 'pizza' || category === 'sandwiches') {
+        return 'French Fries';
+    } else if (category === 'omelettes') {
+        return 'African tea';
+    } else if (category === 'sides') {
+        return 'Ace Burger';
+    }
+    return '';
+}
+
 function renderCart() {
     if (cartCountElement) {
         cartCountElement.innerText = cart.reduce((sum, item) => sum + item.quantity, 0);
     }
+    
+    // Update dynamic header count
+    const cartHeaderCountElement = document.getElementById('cart-header-count');
+    if (cartHeaderCountElement) {
+        const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartHeaderCountElement.innerText = `${totalCount} item${totalCount !== 1 ? 's' : ''}`;
+    }
+
     if (cartItemsContainer) {
         cartItemsContainer.innerHTML = '';
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<div class="empty-cart-msg">Your cart is empty.</div>';
             if (cartTotalElement) cartTotalElement.innerText = "RWF 0";
+            const cartSubtotalElement = document.getElementById('cart-subtotal');
+            if (cartSubtotalElement) cartSubtotalElement.innerText = "RWF 0";
             return;
         }
         
@@ -125,14 +160,28 @@ function renderCart() {
         cart.forEach((item, index) => {
             const itemTotal = item.price * item.quantity;
             total += itemTotal;
+            
+            const suggestion = getServingSuggestion(item);
+            const suggestionHtml = suggestion 
+                ? `<span style="font-size: 11px; opacity: 0.8; display: block; margin-top: 2px; color: var(--brand-red); font-weight: 500;">Normally served with ${suggestion}</span>` 
+                : '';
+                
             const cartItem = document.createElement('div');
-            cartItem.className = 'cart-item';
+            cartItem.className = 'cart-item-modern';
             cartItem.innerHTML = `
-                <div class="item-info">
-                    <span class="item-name">${item.quantity}x ${item.name}</span>
-                    <span class="item-price">RWF ${itemTotal}</span>
+                <div style="display: flex; align-items: center; width: 100%;">
+                    <img src="${item.image || 'images/ace_cafe.png'}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                        <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${item.name}</span>
+                        <span style="color: var(--brand-red); font-weight: 700; font-size: 13px; margin-top: 2px;">RWF ${item.price}</span>
+                        ${suggestionHtml}
+                    </div>
+                    <div style="display: flex; align-items: center; background: rgba(122, 28, 36, 0.08); border-radius: 8px; padding: 4px; border: 1px solid rgba(122, 28, 36, 0.15); margin-left: 10px;">
+                        <button onclick="event.stopPropagation(); updateQuantity(${index}, ${item.quantity - 1})" style="background: none; border: none; color: var(--brand-red); font-weight: bold; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0;">-</button>
+                        <span style="font-weight: 700; font-size: 13px; color: var(--text-color); min-width: 20px; text-align: center; display: inline-block;">${item.quantity}</span>
+                        <button onclick="event.stopPropagation(); updateQuantity(${index}, ${item.quantity + 1})" style="background: none; border: none; color: var(--brand-red); font-weight: bold; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0;">+</button>
+                    </div>
                 </div>
-                <button class="remove-btn" onclick="removeFromCart(${index})">&times;</button>
             `;
             cartItemsContainer.appendChild(cartItem);
         });
@@ -142,15 +191,12 @@ function renderCart() {
         let recommendedItems = [];
         
         if (cartCategories.includes('burgers') || cartCategories.includes('pizza') || cartCategories.includes('sandwiches')) {
-            // Suggest a side or drink
             recommendedItems = menuData.filter(i => (i.category === 'sides' || i.category === 'iced' || i.category === 'smoothies' || i.category === 'shakes') && !cart.find(c => c.id === i.id));
         } else if (cartCategories.includes('coffee') || cartCategories.includes('tea') || cartCategories.includes('iced') || cartCategories.includes('smoothies')) {
-            // Suggest a side/snack
             recommendedItems = menuData.filter(i => (i.category === 'sides' || i.category === 'omelettes') && !cart.find(c => c.id === i.id));
         }
 
         if (recommendedItems.length > 0) {
-            // Pick a random recommendation or just the first
             const upsellItem = recommendedItems[Math.floor(Math.random() * Math.min(3, recommendedItems.length))];
             
             const upsellDiv = document.createElement('div');
@@ -159,17 +205,56 @@ function renderCart() {
                 <p style="font-size: 12px; font-weight: bold; color: var(--brand-red); margin-bottom: 5px;">Frequently bought together:</p>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 13px; color: var(--text-color);">${upsellItem.name} <span style="opacity:0.7">(RWF ${upsellItem.price})</span></span>
-                    <button onclick="addToCart(${upsellItem.id})" style="background: var(--brand-red); color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s;">Add</button>
+                    <button onclick="event.stopPropagation(); addToCart(${upsellItem.id})" style="background: var(--brand-red); color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: 0.2s;">Add</button>
                 </div>
             `;
             cartItemsContainer.appendChild(upsellDiv);
         }
         
+        // Condiment Extras Section
+        const extrasDiv = document.createElement('div');
+        extrasDiv.style.cssText = "border-top: 1px dashed rgba(122, 28, 36, 0.2); margin-top: 15px; padding-top: 15px;";
+        extrasDiv.innerHTML = `
+            <p style="font-size: 12px; font-weight: 700; color: var(--brand-red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Add Extras:</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                    <span style="color: var(--text-color); font-weight: 500;">Avocado <span style="opacity: 0.7; font-size: 10px;">(500)</span></span>
+                    <button onclick="event.stopPropagation(); addToCart(9001)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                    <span style="color: var(--text-color); font-weight: 500;">Kachumbari <span style="opacity: 0.7; font-size: 10px;">(500)</span></span>
+                    <button onclick="event.stopPropagation(); addToCart(9002)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                    <span style="color: var(--text-color); font-weight: 500;">Mayonnaise <span style="opacity: 0.7; font-size: 10px;">(300)</span></span>
+                    <button onclick="event.stopPropagation(); addToCart(9003)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                    <span style="color: var(--text-color); font-weight: 500;">Ketchup <span style="opacity: 0.7; font-size: 10px;">(200)</span></span>
+                    <button onclick="event.stopPropagation(); addToCart(9004)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+                </div>
+            </div>
+        `;
+        cartItemsContainer.appendChild(extrasDiv);
+        
+        const cartSubtotalElement = document.getElementById('cart-subtotal');
+        if (cartSubtotalElement) {
+            cartSubtotalElement.innerText = `RWF ${total}`;
+        }
         if (cartTotalElement) {
             cartTotalElement.innerText = `RWF ${total}`;
         }
     }
 }
+
+window.updateQuantity = (index, newQty) => {
+    if (newQty <= 0) {
+        cart.splice(index, 1);
+    } else {
+        cart[index].quantity = newQty;
+    }
+    renderCart();
+};
 
 window.addToCart = (id, btnEvent) => {
     const item = menuData.find(i => i.id === id);

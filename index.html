@@ -139,21 +139,43 @@
         </main>
 
         <!-- Right Side Cart slide-out -->
-        <aside class="cart-sidebar" id="cart-sidebar">
-            <div class="cart-header">
-                <h2>Current Order</h2>
-                <button class="close-cart" id="close-cart">&times;</button>
+        <aside class="cart-sidebar" id="cart-sidebar" style="border-top-left-radius: 24px; border-bottom-left-radius: 24px;">
+            <div class="cart-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+                <div style="display: flex; flex-direction: column;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 20px; margin: 0; color: var(--text-color);">My Cart</h2>
+                    <span id="cart-header-count" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">0 items</span>
+                </div>
+                <button class="close-cart" id="close-cart" style="width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: none; font-size: 24px; color: var(--text-color); cursor: pointer;">&times;</button>
             </div>
-            <div class="cart-items" id="cart-items">
+            <div class="cart-items" id="cart-items" style="padding-right: 4px;">
                 <!-- Populated by app.js -->
                 <div class="empty-cart-msg">Your cart is empty.</div>
             </div>
-            <div class="cart-summary">
-                <div class="total-row">
-                    <span>Total</span>
-                    <span id="cart-total">RWF 0</span>
+            <div class="cart-summary" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <!-- Promo Code -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" placeholder="Promo code" style="flex-grow: 1; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text-color); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--brand-red)'" onblur="this.style.borderColor='var(--border-color)'">
+                    <button style="background: var(--brand-red); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Apply</button>
                 </div>
-                <button class="btn btn-primary checkout-btn w-100">Checkout</button>
+                
+                <!-- Price Breakdown -->
+                <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; border-bottom: 1px dashed var(--border-color); padding-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal" style="color: var(--text-color); font-weight: 600;">RWF 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Delivery Fee</span>
+                        <span style="color: #2ed573; font-weight: 700; font-size: 12px; letter-spacing: 0.5px;">FREE</span>
+                    </div>
+                </div>
+
+                <!-- Total -->
+                <div class="total-row" style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text-color);">
+                    <span>Total</span>
+                    <span id="cart-total" style="color: var(--brand-red);">RWF 0</span>
+                </div>
+                <button class="btn btn-primary checkout-btn w-100" style="padding: 14px; border-radius: 12px; font-weight: 700; font-size: 15px; letter-spacing: 0.3px; background: var(--brand-red); border: none; color: white; box-shadow: 0 4px 15px rgba(122, 28, 36, 0.25); cursor: pointer; transition: all 0.2s;">Proceed to Checkout</button>
             </div>
         </aside>
 
