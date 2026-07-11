@@ -19,7 +19,9 @@
     <link rel="stylesheet" href="styles.css?v=19">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Leaflet.js Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <!-- Premium Spelled-out Loader -->
@@ -154,15 +156,34 @@
             <div class="cart-summary" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
                 <!-- Promo Code -->
                 <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                    <input type="text" placeholder="Promo code" style="flex-grow: 1; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text-color); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--brand-red)'" onblur="this.style.borderColor='var(--border-color)'">
-                    <button style="background: var(--brand-red); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Apply</button>
+                    <input type="text" id="cart-promo-input" placeholder="Promo code" style="flex-grow: 1; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text-color); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--brand-red)'" onblur="this.style.borderColor='var(--border-color)'">
+                    <button id="cart-promo-btn" style="background: var(--brand-red); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Apply</button>
                 </div>
                 
+                <!-- Loyalty Points Redemption -->
+                <div id="cart-loyalty-container" style="display: none; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: var(--text-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Loyalty Points</strong>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Redeem 10 points for RWF 100 discount</div>
+                        </div>
+                        <span id="cart-user-points" style="font-weight: 700; color: var(--brand-red);">0 pts</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                        <input type="checkbox" id="redeem-points-checkbox" style="width: 16px; height: 16px; accent-color: var(--brand-red); cursor: pointer;">
+                        <label for="redeem-points-checkbox" style="font-weight: 500; cursor: pointer; flex-grow: 1;">Redeem points for discount</label>
+                    </div>
+                </div>
+
                 <!-- Price Breakdown -->
                 <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; border-bottom: 1px dashed var(--border-color); padding-bottom: 16px;">
                     <div style="display: flex; justify-content: space-between;">
                         <span>Subtotal</span>
                         <span id="cart-subtotal" style="color: var(--text-color); font-weight: 600;">RWF 0</span>
+                    </div>
+                    <div id="cart-discount-row" style="display: none; justify-content: space-between; color: #2ed573;">
+                        <span>Discount</span>
+                        <span id="cart-discount" style="font-weight: 700;">-RWF 0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span>Delivery Fee</span>
@@ -210,6 +231,12 @@
                                 </div>
                                 <input type="hidden" id="review-rating-val" value="0">
                                 <textarea id="review-text-input" rows="2" placeholder="Tell us what you think..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-color); margin-bottom: 10px; font-family: inherit;"></textarea>
+                                
+                                <div style="margin-bottom: 10px;">
+                                    <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--text-muted);">Attach Photo (optional)</label>
+                                    <input type="file" id="review-photo-input" accept="image/*" style="width: 100%; font-size: 12px; color: var(--text-color);">
+                                </div>
+
                                 <button type="submit" class="btn btn-primary w-100" style="padding: 8px;">Submit Review</button>
                             </form>
                         </div>
@@ -317,8 +344,27 @@
                         <div class="form-group" style="margin-bottom: 15px;">
                             <input type="tel" id="checkout-phone" placeholder="Phone Number" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: var(--text-color);">
                         </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
+                        
+                        <!-- Saved Addresses Selector -->
+                        <div id="checkout-saved-addresses-container" style="display: none; margin-bottom: 15px;">
+                            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Choose Saved Address</label>
+                            <select id="checkout-address-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: var(--text-color); outline: none;">
+                                <option value="">-- Select a saved address --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px;">
                             <textarea id="checkout-address" placeholder="Delivery Address" required rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: var(--text-color);"></textarea>
+                        </div>
+
+                        <!-- Map Pinning container -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Pin your exact location (optional)</label>
+                            <div id="checkout-map" style="height: 180px; width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #eee; position: relative; z-index: 1;"></div>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <input type="text" id="checkout-lat" placeholder="Latitude" readonly style="width: 50%; padding: 6px; font-size: 11px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); color: var(--text-muted);">
+                                <input type="text" id="checkout-lng" placeholder="Longitude" readonly style="width: 50%; padding: 6px; font-size: 11px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); color: var(--text-muted);">
+                            </div>
                         </div>
                     </div>
 
@@ -388,63 +434,102 @@
                 <button type="button" class="close-modal" id="close-profile-btn-top">
                     <i class="ph ph-x"></i>
                 </button>
-                <h2 style="margin-bottom: 24px; text-align: center; color: var(--text-dark); font-weight: 700;">My Profile</h2>
+                <h2 style="margin-bottom: 16px; text-align: center; color: var(--text-dark); font-weight: 700;">My Profile</h2>
                 
-                <form id="profile-form" enctype="multipart/form-data">
-                    <div style="text-align: center; margin-bottom: 24px; position: relative;">
-                        <div class="profile-avatar-container" id="profile-avatar-trigger" title="Click to upload profile photo">
-                            <img id="profile-preview-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                            <div id="profile-placeholder-img" style="width: 100%; height: 100%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 44px; border: 2px solid rgba(255,255,255,0.2);">👤</div>
-                            <div class="avatar-overlay">
-                                <i class="ph ph-camera" style="font-size: 24px;"></i>
-                                <span style="font-size: 10px; margin-top: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Edit</span>
+                <!-- Profile Tabs -->
+                <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; padding-bottom: 8px;">
+                    <button type="button" id="profile-tab-info" style="flex: 1; padding: 8px; border: none; background: none; border-bottom: 2px solid var(--brand-red); font-weight: 700; color: var(--text-dark); cursor: pointer; font-family: inherit;">My Info</button>
+                    <button type="button" id="profile-tab-addresses" style="flex: 1; padding: 8px; border: none; background: none; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: inherit;">Addresses</button>
+                </div>
+
+                <!-- Info Section -->
+                <div id="profile-info-section">
+                    <form id="profile-form" enctype="multipart/form-data">
+                        <div style="text-align: center; margin-bottom: 24px; position: relative;">
+                            <div class="profile-avatar-container" id="profile-avatar-trigger" title="Click to upload profile photo">
+                                <img id="profile-preview-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                <div id="profile-placeholder-img" style="width: 100%; height: 100%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 44px; border: 2px solid rgba(255,255,255,0.2);">👤</div>
+                                <div class="avatar-overlay">
+                                    <i class="ph ph-camera" style="font-size: 24px;"></i>
+                                    <span style="font-size: 10px; margin-top: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Edit</span>
+                                </div>
+                            </div>
+                            <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
+                            
+                            <div class="profile-points-badge" id="profile-points-display" style="margin-top: 8px;">
+                                <i class="ph ph-coffee"></i>
+                                <span>Points: <span id="profile-points-val">0</span></span>
                             </div>
                         </div>
-                        <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
-                        
-                        <div class="profile-points-badge" id="profile-points-display" style="margin-top: 8px;">
-                            <i class="ph ph-coffee"></i>
-                            <span>Points: <span id="profile-points-val">0</span></span>
+
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Email Address</label>
+                            <div class="profile-field-icon-wrapper">
+                                <input type="email" id="profile-email" class="profile-input-premium" disabled>
+                                <i class="ph ph-lock-key profile-field-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Full Name</label>
+                            <div class="profile-field-icon-wrapper">
+                                <input type="text" id="profile-name" class="profile-input-premium" required>
+                                <i class="ph ph-user profile-field-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Phone Number</label>
+                            <div class="profile-field-icon-wrapper">
+                                <input type="text" id="profile-phone" class="profile-input-premium" required>
+                                <i class="ph ph-phone profile-field-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Default Address</label>
+                            <div class="profile-field-icon-wrapper">
+                                <textarea id="profile-address" class="profile-input-premium" rows="2" required style="padding-top: 10px; resize: none;"></textarea>
+                                <i class="ph ph-map-pin profile-field-icon" style="top: 14px;"></i>
+                            </div>
+                        </div>
+
+                        <div class="profile-modal-btn-row">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; border-radius: 12px;">Save Profile</button>
+                            <button type="button" class="btn" id="close-profile-btn" style="width: 100%; padding: 12px; font-size: 15px; border-radius: 12px; background: rgba(0,0,0,0.05); color: var(--text-dark);">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Addresses Section -->
+                <div id="profile-addresses-section" style="display: none;">
+                    <div id="profile-addresses-list" style="max-height: 220px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <button type="button" id="profile-add-address-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px; border-radius: 12px; background: var(--brand-red); color: white; border: none; cursor: pointer; font-weight: bold;">Add New Address</button>
+                    
+                    <!-- Inner Form for adding/editing address -->
+                    <div id="profile-address-form-container" style="display: none; border-top: 1px dashed var(--border-color); margin-top: 16px; padding-top: 16px;">
+                        <h4 id="address-form-title" style="margin: 0 0 12px 0; color: var(--text-dark);">New Address</h4>
+                        <input type="hidden" id="address-form-id" value="">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--text-muted);">Label (e.g. Home, Work)</label>
+                            <input type="text" id="address-form-label" placeholder="Home" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: 13px; outline: none; box-sizing: border-box; background: rgba(0,0,0,0.02); color: var(--text-dark);">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: var(--text-muted);">Address Text</label>
+                            <textarea id="address-form-text" placeholder="123 Street..." rows="2" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: 13px; outline: none; box-sizing: border-box; resize: none; background: rgba(0,0,0,0.02); color: var(--text-dark);"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="address-form-lat" placeholder="Latitude" style="width: 50%; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: 13px; outline: none; box-sizing: border-box; background: rgba(0,0,0,0.02); color: var(--text-dark);">
+                            <input type="text" id="address-form-lng" placeholder="Longitude" style="width: 50%; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: 13px; outline: none; box-sizing: border-box; background: rgba(0,0,0,0.02); color: var(--text-dark);">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="address-form-save" style="flex: 1; padding: 10px; font-size: 13px; border-radius: 8px; background: #2ed573; color: white; border: none; cursor: pointer; font-weight: bold;">Save</button>
+                            <button type="button" id="address-form-cancel" style="flex: 1; padding: 10px; font-size: 13px; border-radius: 8px; background: rgba(0,0,0,0.05); color: var(--text-dark); border: none; cursor: pointer;">Cancel</button>
                         </div>
                     </div>
-
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Email Address</label>
-                        <div class="profile-field-icon-wrapper">
-                            <input type="email" id="profile-email" class="profile-input-premium" disabled>
-                            <i class="ph ph-lock-key profile-field-icon"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Full Name</label>
-                        <div class="profile-field-icon-wrapper">
-                            <input type="text" id="profile-name" class="profile-input-premium" required>
-                            <i class="ph ph-user profile-field-icon"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Phone Number</label>
-                        <div class="profile-field-icon-wrapper">
-                            <input type="text" id="profile-phone" class="profile-input-premium" required>
-                            <i class="ph ph-phone profile-field-icon"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-muted);">Default Address</label>
-                        <div class="profile-field-icon-wrapper">
-                            <textarea id="profile-address" class="profile-input-premium" rows="2" required style="padding-top: 10px; resize: none;"></textarea>
-                            <i class="ph ph-map-pin profile-field-icon" style="top: 14px;"></i>
-                        </div>
-                    </div>
-
-                    <div class="profile-modal-btn-row">
-                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; border-radius: 12px;">Save Profile</button>
-                        <button type="button" class="btn" id="close-profile-btn" style="width: 100%; padding: 12px; font-size: 15px; border-radius: 12px; background: rgba(0,0,0,0.05); color: var(--text-dark);">Cancel</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
 

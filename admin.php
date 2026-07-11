@@ -48,6 +48,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <?php if ($isAdmin): ?>
             <button class="admin-tab-btn" data-target="section-extras" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Extras</button>
             <button class="admin-tab-btn" data-target="section-users" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Users</button>
+            <button class="admin-tab-btn" data-target="section-coupons" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Coupons</button>
             <button class="admin-tab-btn" data-target="section-staff" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Staff</button>
             <button class="admin-tab-btn" data-target="section-reviews" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Reviews</button>
             <button class="admin-tab-btn" data-target="section-analytics" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Analytics</button>
@@ -109,6 +110,38 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <!-- Table/Grid of Extras with full CRUD actions -->
             <div class="dealer-grid" id="admin-extras-list">
                 <!-- Populated by admin.js -->
+            </div>
+        </div>
+
+        <div id="section-coupons" class="admin-section" style="display: none;">
+            <header class="dashboard-header">
+                <div class="dashboard-title-area">
+                    <h2>Promo Codes & Coupons</h2>
+                    <div class="dashboard-stats">
+                        <span id="coupon-count-label" class="stat-highlight">0 Coupons</span>
+                        <span class="stat-icon">↗</span>
+                        <span class="stat-text">Manage discount coupons</span>
+                    </div>
+                </div>
+                <button id="add-new-coupon-btn" class="btn btn-manage-light" style="padding: 8px 16px;">+ Add New Coupon</button>
+            </header>
+
+            <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                            <th style="padding: 12px 16px;">Code</th>
+                            <th style="padding: 12px 16px;">Type</th>
+                            <th style="padding: 12px 16px;">Value</th>
+                            <th style="padding: 12px 16px;">Min Order</th>
+                            <th style="padding: 12px 16px;">Status</th>
+                            <th style="padding: 12px 16px; text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-coupons-list">
+                        <!-- Populated by admin.js -->
+                    </tbody>
+                </table>
             </div>
         </div>
         <?php endif; ?>
@@ -628,6 +661,52 @@ $isAdmin = $_SESSION['role'] === 'admin';
                 <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-staff-modal').classList.add('hidden')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Add Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div id="admin-coupon-modal" class="modal-overlay hidden">
+        <div class="modal-content glass admin-modal-content" style="max-width: 450px;">
+            <h2 id="coupon-modal-title">Manage Coupon</h2>
+            <form id="coupon-form">
+                <input type="hidden" id="coupon-id">
+                
+                <div class="form-group">
+                    <label>Coupon Code</label>
+                    <input type="text" id="coupon-code" required class="form-input" placeholder="e.g. WELCOME10" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <label>Discount Type</label>
+                    <select id="coupon-type" required class="form-input">
+                        <option value="percent">Percentage Off (%)</option>
+                        <option value="flat">Flat Amount Off (RWF)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Discount Value</label>
+                    <input type="number" id="coupon-value" required class="form-input" min="1" placeholder="e.g. 10 for percentage, or 1000 for flat">
+                </div>
+                
+                <div class="form-group">
+                    <label>Minimum Order Amount (RWF)</label>
+                    <input type="number" id="coupon-min-order" required class="form-input" min="0" value="0" placeholder="e.g. 5000">
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="coupon-active" required class="form-input">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" id="coupon-close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>

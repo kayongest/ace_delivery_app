@@ -242,12 +242,63 @@ function renderCart() {
             cartItemsContainer.appendChild(extrasDiv);
         }
         
+        // Loyalty points UI update
+        const loyaltyContainer = document.getElementById('cart-loyalty-container');
+        const userPointsLabel = document.getElementById('cart-user-points');
+        if (loyaltyContainer && userPointsLabel) {
+            if (currentUser && currentUser.points > 0) {
+                loyaltyContainer.style.display = 'block';
+                userPointsLabel.textContent = `${currentUser.points} pts`;
+            } else {
+                loyaltyContainer.style.display = 'none';
+            }
+        }
+
+        // Discount calculations
+        let couponDiscount = 0;
+        if (window.appliedCoupon) {
+            if (total < window.appliedCoupon.min_order_amount) {
+                window.appliedCoupon = null;
+                showToast('Applied coupon removed - Minimum order amount no longer met.', 'error');
+            } else {
+                if (window.appliedCoupon.type === 'percent') {
+                    couponDiscount = Math.floor(total * (window.appliedCoupon.value / 100));
+                } else {
+                    couponDiscount = window.appliedCoupon.value;
+                }
+            }
+        }
+
+        let loyaltyDiscount = 0;
+        const redeemCheckbox = document.getElementById('redeem-points-checkbox');
+        if (redeemCheckbox && redeemCheckbox.checked && currentUser && currentUser.points > 0) {
+            const remainingTotal = Math.max(0, total - couponDiscount);
+            const maxPointsRedeemable = Math.ceil(remainingTotal / 10);
+            const pointsToRedeem = Math.min(currentUser.points, maxPointsRedeemable);
+            loyaltyDiscount = pointsToRedeem * 10;
+        }
+
+        const totalDiscount = couponDiscount + loyaltyDiscount;
+        const finalTotal = Math.max(0, total - totalDiscount);
+
         const cartSubtotalElement = document.getElementById('cart-subtotal');
         if (cartSubtotalElement) {
             cartSubtotalElement.innerText = `RWF ${total}`;
         }
+        
+        const discountRow = document.getElementById('cart-discount-row');
+        const discountVal = document.getElementById('cart-discount');
+        if (discountRow && discountVal) {
+            if (totalDiscount > 0) {
+                discountRow.style.display = 'flex';
+                discountVal.innerText = `-RWF ${totalDiscount}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
+
         if (cartTotalElement) {
-            cartTotalElement.innerText = `RWF ${total}`;
+            cartTotalElement.innerText = `RWF ${finalTotal}`;
         }
     }
 }
@@ -419,6 +470,9 @@ async function fetchAndRenderReviews(menuId) {
                     total += parseInt(r.rating);
                     const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
                     const d = new Date(r.created_at).toLocaleDateString();
+                    const photoHtml = r.photo 
+                        ? `<div style="margin-top: 8px;"><a href="${r.photo}" target="_blank"><img src="${r.photo}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></a></div>` 
+                        : '';
                     return `<div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                         <div style="display:flex; justify-content:space-between;">
                             <strong style="color:white; font-size:12px;">${r.customer_name}</strong>
@@ -426,6 +480,7 @@ async function fetchAndRenderReviews(menuId) {
                         </div>
                         <div style="font-size:11px; color:#888;">${d}</div>
                         <div style="font-size:13px; margin-top:3px;">${r.review_text || ''}</div>
+                        ${photoHtml}
                     </div>`;
                 }).join('');
                 if(avgEl) avgEl.innerText = (total / reviews.length).toFixed(1);
@@ -474,14 +529,18 @@ if (reviewForm) {
         }
         
         try {
+            const formData = new FormData();
+            formData.append('menu_id', currentModalItemId);
+            formData.append('rating', rating);
+            formData.append('review_text', text);
+            const fileInput = document.getElementById('review-photo-input');
+            if (fileInput && fileInput.files[0]) {
+                formData.append('photo', fileInput.files[0]);
+            }
+
             const res = await fetch('api/reviews.php', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    menu_id: currentModalItemId,
-                    rating: rating,
-                    review_text: text
-                })
+                body: formData
             });
             const result = await res.json();
             if (result.status === 'success') {
@@ -686,6 +745,9 @@ if (checkoutBtn && checkoutModal) {
         checkoutModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         if (cartSidebar) cartSidebar.classList.remove('open');
+        
+        populateCheckoutAddresses();
+        initCheckoutMap();
     });
 }
 
@@ -783,11 +845,16 @@ if (checkoutForm) {
             return;
         }
 
+        const redeemPointsCheckbox = document.getElementById('redeem-points-checkbox');
         const orderData = {
             name,
             phone,
             address,
             payment_method: paymentMethod,
+            coupon_code: window.appliedCoupon ? window.appliedCoupon.code : null,
+            redeem_points: (redeemPointsCheckbox && redeemPointsCheckbox.checked) ? 1 : 0,
+            latitude: document.getElementById('checkout-lat') ? document.getElementById('checkout-lat').value : null,
+            longitude: document.getElementById('checkout-lng') ? document.getElementById('checkout-lng').value : null,
             items: cart.map(item => ({
                 id: item.id,
                 price: item.price,
@@ -806,6 +873,11 @@ if (checkoutForm) {
             if (result.status === 'success') {
                 showToast('Your order has been accepted - Please wait for approval!', 'success');
                 cart = [];
+                window.appliedCoupon = null; // Clear applied coupon
+                const promoInput = document.getElementById('cart-promo-input');
+                if (promoInput) promoInput.value = '';
+                const redeemPointsCheckbox = document.getElementById('redeem-points-checkbox');
+                if (redeemPointsCheckbox) redeemPointsCheckbox.checked = false;
                 renderCart();
                 checkoutForm.reset();
                 closeCheckoutModal();
@@ -1010,6 +1082,8 @@ window.openProfileModal = function() {
     
     modal.classList.remove('hidden');
     setTimeout(() => modal.style.opacity = '1', 10);
+    const tabInfo = document.getElementById('profile-tab-info');
+    if (tabInfo) tabInfo.click();
 };
 
 window.closeProfileModal = function() {
@@ -1126,9 +1200,12 @@ function renderMyOrders(orders) {
         const payColor = isPaid ? '#4F6F52' : 'var(--text-color)';
         const payBorder = isPaid ? '1px solid #4F6F52' : '1px solid var(--border-color)';
 
-        const receiptBtn = (order.status === 'delivered' || order.status === 'cancelled') 
-            ? `<a href="receipt.php?id=${order.id}" target="_blank" style="padding: 6px 12px; background: transparent; color: var(--text-color); text-decoration: none; border-radius: 4px; font-size: 12px; border: 1px solid var(--border-color); font-weight: 500;">View Receipt</a>`
-            : `<span style="font-size: 12px; color: var(--text-color); opacity: 0.6; font-style: italic;">Processing...</span>`;
+        let actionBtn = '';
+        if (order.status === 'delivered' || order.status === 'cancelled') {
+            actionBtn = `<a href="receipt.php?id=${order.id}" target="_blank" style="padding: 6px 12px; background: transparent; color: var(--text-color); text-decoration: none; border-radius: 4px; font-size: 12px; border: 1px solid var(--border-color); font-weight: 500;">View Receipt</a>`;
+        } else {
+            actionBtn = `<a href="track_order.php?id=${order.id}" target="_blank" style="padding: 6px 12px; background: var(--brand-red); color: white; text-decoration: none; border-radius: 4px; font-size: 12px; border: 1px solid var(--brand-red); font-weight: 600; box-shadow: 0 2px 8px rgba(122, 28, 36, 0.15);">Track Live</a>`;
+        }
 
         return `
             <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
@@ -1160,7 +1237,7 @@ function renderMyOrders(orders) {
                         <span style="display: block; margin-bottom: 3px;">${date}</span>
                         <strong>RWF ${order.total_amount}</strong>
                     </div>
-                    ${receiptBtn}
+                    ${actionBtn}
                 </div>
             </div>
         `;
@@ -1437,3 +1514,355 @@ window.generatePDF = function(orderId, type) {
     html2pdf().set(opt).from(htmlString).save();
 };
 
+// --- Promo Code & Loyalty Points Storefront Listeners ---
+window.appliedCoupon = null;
+
+const promoInput = document.getElementById('cart-promo-input');
+const promoBtn = document.getElementById('cart-promo-btn');
+const redeemCheckbox = document.getElementById('redeem-points-checkbox');
+
+if (promoBtn) {
+    promoBtn.addEventListener('click', async () => {
+        const code = promoInput.value.trim();
+        if (!code) {
+            showToast('Please enter a coupon code.', 'error');
+            return;
+        }
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        if (subtotal === 0) {
+            showToast('Your cart is empty.', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('api/apply_coupon.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, subtotal: subtotal })
+            });
+            
+            const result = await response.json();
+            if (result.status === 'success') {
+                window.appliedCoupon = result;
+                showToast(result.message, 'success');
+                renderCart();
+            } else {
+                showToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error applying coupon:', error);
+            showToast('Server error applying coupon.', 'error');
+        }
+    });
+}
+
+if (redeemCheckbox) {
+    redeemCheckbox.addEventListener('change', () => {
+        renderCart();
+    });
+}
+
+
+// --- SAVED ADDRESS BOOK & MAP PINNING (FEATURE 4) ---
+
+let savedAddressesList = [];
+let checkoutMapInstance = null;
+let checkoutMapMarker = null;
+
+// Tab switcher inside Profile modal
+const tabInfo = document.getElementById('profile-tab-info');
+const tabAddresses = document.getElementById('profile-tab-addresses');
+const sectionInfo = document.getElementById('profile-info-section');
+const sectionAddresses = document.getElementById('profile-addresses-section');
+
+if (tabInfo && tabAddresses && sectionInfo && sectionAddresses) {
+    tabInfo.addEventListener('click', () => {
+        tabInfo.style.borderBottom = '2px solid var(--brand-red)';
+        tabInfo.style.fontWeight = '700';
+        tabInfo.style.color = 'var(--text-dark)';
+        
+        tabAddresses.style.borderBottom = 'none';
+        tabAddresses.style.fontWeight = '600';
+        tabAddresses.style.color = 'var(--text-muted)';
+        
+        sectionInfo.style.display = 'block';
+        sectionAddresses.style.display = 'none';
+    });
+    
+    tabAddresses.addEventListener('click', () => {
+        tabAddresses.style.borderBottom = '2px solid var(--brand-red)';
+        tabAddresses.style.fontWeight = '700';
+        tabAddresses.style.color = 'var(--text-dark)';
+        
+        tabInfo.style.borderBottom = 'none';
+        tabInfo.style.fontWeight = '600';
+        tabInfo.style.color = 'var(--text-muted)';
+        
+        sectionInfo.style.display = 'none';
+        sectionAddresses.style.display = 'block';
+        fetchUserAddresses();
+    });
+}
+
+const addAddrBtn = document.getElementById('profile-add-address-btn');
+if (addAddrBtn) addAddrBtn.addEventListener('click', () => openAddressForm());
+
+const cancelAddrBtn = document.getElementById('address-form-cancel');
+if (cancelAddrBtn) cancelAddrBtn.addEventListener('click', closeAddressForm);
+
+const saveAddrBtn = document.getElementById('address-form-save');
+if (saveAddrBtn) saveAddrBtn.addEventListener('click', saveAddress);
+
+async function fetchUserAddresses() {
+    const listContainer = document.getElementById('profile-addresses-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '<div style="text-align: center; padding: 15px; color: var(--text-muted);">Loading addresses...</div>';
+    
+    try {
+        const response = await fetch('api/addresses.php');
+        const res = await response.json();
+        
+        if (res.status === 'success') {
+            savedAddressesList = res.data;
+            renderProfileAddresses();
+        } else {
+            listContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--brand-red);">\${res.message}</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading addresses:', error);
+        listContainer.innerHTML = '<div style="text-align: center; padding: 15px; color: var(--brand-red);">Failed to load addresses.</div>';
+    }
+}
+
+function renderProfileAddresses() {
+    const listContainer = document.getElementById('profile-addresses-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '';
+    
+    if (savedAddressesList.length === 0) {
+        listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">No saved addresses yet. Add one below!</div>';
+        return;
+    }
+    
+    savedAddressesList.forEach(addr => {
+        const div = document.createElement('div');
+        div.style.cssText = 'background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; position: relative;';
+        
+        const coordsDisplay = (addr.latitude && addr.longitude) 
+            ? `<div style="font-size: 10px; color: var(--brand-red); display: flex; align-items: center; gap: 4px; font-weight: 600; margin-top: 2px;"><i class="ph ph-map-pin"></i> \${addr.latitude}, \${addr.longitude}</div>`
+            : '';
+            
+        div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: var(--text-dark); font-size: 14px;">\${addr.label}</strong>
+                <div style="display: flex; gap: 10px;">
+                    <button class="edit-addr-btn" style="background: none; border: none; cursor: pointer; color: var(--text-dark); font-size: 12px; font-weight: 600;">Edit</button>
+                    <button class="delete-addr-btn" style="background: none; border: none; cursor: pointer; color: #ff4757; font-size: 12px; font-weight: 600;">Delete</button>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4; word-wrap: break-word;">\${addr.address_text}</div>
+            \${coordsDisplay}
+        `;
+        
+        div.querySelector('.edit-addr-btn').addEventListener('click', () => openAddressForm(addr));
+        div.querySelector('.delete-addr-btn').addEventListener('click', () => deleteAddress(addr.id));
+        
+        listContainer.appendChild(div);
+    });
+}
+
+function openAddressForm(addr = null) {
+    const container = document.getElementById('profile-address-form-container');
+    if (!container) return;
+    
+    container.style.display = 'block';
+    
+    if (addr) {
+        document.getElementById('address-form-title').textContent = 'Edit Address';
+        document.getElementById('address-form-id').value = addr.id;
+        document.getElementById('address-form-label').value = addr.label;
+        document.getElementById('address-form-text').value = addr.address_text;
+        document.getElementById('address-form-lat').value = addr.latitude || '';
+        document.getElementById('address-form-lng').value = addr.longitude || '';
+    } else {
+        document.getElementById('address-form-title').textContent = 'New Address';
+        document.getElementById('address-form-id').value = '';
+        document.getElementById('address-form-label').value = '';
+        document.getElementById('address-form-text').value = '';
+        document.getElementById('address-form-lat').value = '';
+        document.getElementById('address-form-lng').value = '';
+    }
+    
+    const section = document.getElementById('profile-addresses-section');
+    if(section) {
+        setTimeout(() => {
+            section.scrollTop = section.scrollHeight;
+        }, 50);
+    }
+}
+
+function closeAddressForm() {
+    const container = document.getElementById('profile-address-form-container');
+    if (container) container.style.display = 'none';
+}
+
+async function saveAddress() {
+    const id = document.getElementById('address-form-id').value;
+    const label = document.getElementById('address-form-label').value.trim() || 'Home';
+    const text = document.getElementById('address-form-text').value.trim();
+    const lat = document.getElementById('address-form-lat').value.trim();
+    const lng = document.getElementById('address-form-lng').value.trim();
+    
+    if (!text) {
+        showToast('Address text is required.', 'error');
+        return;
+    }
+    
+    const payload = {
+        label: label,
+        address_text: text,
+        latitude: lat ? parseFloat(lat) : null,
+        longitude: lng ? parseFloat(lng) : null
+    };
+    if (id) {
+        payload.id = parseInt(id);
+    }
+    
+    try {
+        const response = await fetch('api/addresses.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+            showToast(id ? 'Address updated!' : 'Address saved!');
+            closeAddressForm();
+            fetchUserAddresses();
+        } else {
+            showToast(res.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving address:', error);
+        showToast('Failed to save address.', 'error');
+    }
+}
+
+async function deleteAddress(id) {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    
+    try {
+        const response = await fetch('api/addresses.php', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ id: id })
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+            showToast('Address deleted successfully.');
+            fetchUserAddresses();
+        } else {
+            showToast(res.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting address:', error);
+        showToast('Failed to delete address.', 'error');
+    }
+}
+
+// Checkout Addresses list populator & Map Picker initialization
+async function populateCheckoutAddresses() {
+    const select = document.getElementById('checkout-address-select');
+    const container = document.getElementById('checkout-saved-addresses-container');
+    if (!select || !container) return;
+    
+    select.innerHTML = '<option value="">-- Select a saved address --</option>';
+    container.style.display = 'none';
+    
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch('api/addresses.php');
+        const res = await response.json();
+        
+        if (res.status === 'success' && res.data.length > 0) {
+            container.style.display = 'block';
+            res.data.forEach(addr => {
+                const opt = document.createElement('option');
+                opt.value = addr.id;
+                opt.textContent = `\${addr.label}: \${addr.address_text.substring(0, 30)}...`;
+                opt.dataset.address = addr.address_text;
+                opt.dataset.lat = addr.latitude || '';
+                opt.dataset.lng = addr.longitude || '';
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error('Error fetching checkout addresses:', e);
+    }
+}
+
+const checkoutSelect = document.getElementById('checkout-address-select');
+if (checkoutSelect) {
+    checkoutSelect.addEventListener('change', (e) => {
+        const opt = checkoutSelect.options[checkoutSelect.selectedIndex];
+        if (opt && opt.value !== '') {
+            document.getElementById('checkout-address').value = opt.dataset.address;
+            
+            const lat = opt.dataset.lat;
+            const lng = opt.dataset.lng;
+            if (lat && lng) {
+                const parsedLat = parseFloat(lat);
+                const parsedLng = parseFloat(lng);
+                document.getElementById('checkout-lat').value = parsedLat;
+                document.getElementById('checkout-lng').value = parsedLng;
+                
+                if (checkoutMapInstance && checkoutMapMarker) {
+                    checkoutMapInstance.setView([parsedLat, parsedLng], 14);
+                    checkoutMapMarker.setLatLng([parsedLat, parsedLng]);
+                }
+            }
+        }
+    });
+}
+
+function initCheckoutMap(lat = -1.9441, lng = 30.0619) {
+    const mapContainer = document.getElementById('checkout-map');
+    if (!mapContainer) return;
+    
+    document.getElementById('checkout-lat').value = lat;
+    document.getElementById('checkout-lng').value = lng;
+    
+    if (checkoutMapInstance) {
+        checkoutMapInstance.remove();
+    }
+    
+    checkoutMapInstance = L.map('checkout-map').setView([lat, lng], 14);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(checkoutMapInstance);
+    
+    checkoutMapMarker = L.marker([lat, lng], { draggable: true }).addTo(checkoutMapInstance);
+    
+    checkoutMapMarker.on('dragend', function (e) {
+        const position = checkoutMapMarker.getLatLng();
+        document.getElementById('checkout-lat').value = position.lat.toFixed(6);
+        document.getElementById('checkout-lng').value = position.lng.toFixed(6);
+    });
+    
+    checkoutMapInstance.on('click', function(e) {
+        checkoutMapMarker.setLatLng(e.latlng);
+        document.getElementById('checkout-lat').value = e.latlng.lat.toFixed(6);
+        document.getElementById('checkout-lng').value = e.latlng.lng.toFixed(6);
+    });
+
+    setTimeout(() => {
+        if(checkoutMapInstance) {
+            checkoutMapInstance.invalidateSize();
+        }
+    }, 300);
+}

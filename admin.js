@@ -387,6 +387,167 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Coupons Management ---
+    let couponData = [];
+    const couponModal = document.getElementById('admin-coupon-modal');
+    const couponForm = document.getElementById('coupon-form');
+    const couponTitle = document.getElementById('coupon-modal-title');
+    const couponsList = document.getElementById('admin-coupons-list');
+    
+    async function fetchCoupons() {
+        if (!couponsList) return;
+        couponsList.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Loading coupons...</td></tr>';
+        
+        try {
+            const response = await fetch(`api/admin_coupons.php?_t=${new Date().getTime()}`);
+            if (response.ok) {
+                const res = await response.json();
+                if (res.status === 'success') {
+                    couponData = res.data;
+                    renderCoupons();
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching coupons:', error);
+        }
+    }
+
+    function renderCoupons() {
+        if (!couponsList) return;
+        couponsList.innerHTML = '';
+        
+        const countLabel = document.getElementById('coupon-count-label');
+        if(countLabel) {
+            countLabel.textContent = `${couponData.length} Coupons`;
+        }
+
+        if (couponData.length === 0) {
+            couponsList.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">No coupons created yet.</td></tr>';
+            return;
+        }
+
+        couponData.forEach(coupon => {
+            const tr = document.createElement('tr');
+            tr.style.cssText = 'border-bottom: 1px solid var(--border-color);';
+            
+            const statusBadge = coupon.active == 1 
+                ? '<span style="background: rgba(46, 213, 115, 0.15); color: #2ed573; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;">Active</span>'
+                : '<span style="background: rgba(255, 71, 87, 0.15); color: #ff4757; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;">Inactive</span>';
+            
+            const typeDisplay = coupon.type === 'percent' ? 'Percent' : 'Flat';
+            const valueDisplay = coupon.type === 'percent' ? `${coupon.value}%` : `RWF ${coupon.value}`;
+            
+            tr.innerHTML = `
+                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-color); font-family: monospace; font-size: 15px;">${coupon.code}</td>
+                <td style="padding: 14px 16px; color: var(--text-muted);">${typeDisplay}</td>
+                <td style="padding: 14px 16px; font-weight: 600; color: var(--text-color);">${valueDisplay}</td>
+                <td style="padding: 14px 16px; color: var(--text-muted);">RWF ${coupon.min_order_amount}</td>
+                <td style="padding: 14px 16px;">${statusBadge}</td>
+                <td style="padding: 14px 16px; text-align: right;">
+                    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                        <button class="edit-coupon-btn" data-id="${coupon.id}" style="background: none; border: none; cursor: pointer; color: var(--text-color); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 4px;">Edit</button>
+                        <button class="delete-coupon-btn" data-id="${coupon.id}" style="background: none; border: none; cursor: pointer; color: #ff4757; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 4px;">Delete</button>
+                    </div>
+                </td>
+            `;
+            
+            // Bind edit/delete click listeners
+            tr.querySelector('.edit-coupon-btn').addEventListener('click', () => openCouponModal(true, coupon));
+            tr.querySelector('.delete-coupon-btn').addEventListener('click', () => deleteCoupon(coupon.id));
+            
+            couponsList.appendChild(tr);
+        });
+    }
+
+    function openCouponModal(isEdit = false, coupon = null) {
+        if (!couponModal) return;
+        couponModal.classList.remove('hidden');
+        
+        if (isEdit && coupon) {
+            couponTitle.textContent = 'Edit Coupon';
+            document.getElementById('coupon-id').value = coupon.id;
+            document.getElementById('coupon-code').value = coupon.code;
+            document.getElementById('coupon-type').value = coupon.type;
+            document.getElementById('coupon-value').value = coupon.value;
+            document.getElementById('coupon-min-order').value = coupon.min_order_amount;
+            document.getElementById('coupon-active').value = coupon.active;
+        } else {
+            couponTitle.textContent = 'Add New Coupon';
+            if (couponForm) couponForm.reset();
+            document.getElementById('coupon-id').value = '';
+            document.getElementById('coupon-min-order').value = 0;
+            document.getElementById('coupon-active').value = 1;
+        }
+    }
+
+    function closeCouponModal() {
+        if (couponModal) couponModal.classList.add('hidden');
+    }
+
+    async function deleteCoupon(id) {
+        const confirmed = await window.customConfirm('Are you sure you want to delete this coupon?');
+        if (confirmed) {
+            try {
+                const response = await fetch(`api/admin_coupons.php?id=${id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showToast('Coupon deleted successfully!');
+                    fetchCoupons();
+                } else {
+                    showToast(result.message || 'Error deleting coupon', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting coupon:', error);
+                showToast('Failed to delete coupon', 'error');
+            }
+        }
+    }
+
+    // Modal click listeners
+    const addCouponBtn = document.getElementById('add-new-coupon-btn');
+    if (addCouponBtn) addCouponBtn.addEventListener('click', () => openCouponModal(false));
+    
+    const closeCouponBtn = document.getElementById('coupon-close-modal');
+    if (closeCouponBtn) closeCouponBtn.addEventListener('click', closeCouponModal);
+
+    // Form submission
+    if (couponForm) {
+        couponForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                id: document.getElementById('coupon-id').value ? parseInt(document.getElementById('coupon-id').value) : 0,
+                code: document.getElementById('coupon-code').value.toUpperCase().trim(),
+                type: document.getElementById('coupon-type').value,
+                value: parseInt(document.getElementById('coupon-value').value),
+                min_order_amount: parseInt(document.getElementById('coupon-min-order').value),
+                active: parseInt(document.getElementById('coupon-active').value)
+            };
+            
+            try {
+                const response = await fetch('api/admin_coupons.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showToast(payload.id > 0 ? 'Coupon updated!' : 'Coupon created!');
+                    closeCouponModal();
+                    fetchCoupons();
+                } else {
+                    showToast(result.message || 'Error saving coupon', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving coupon:', error);
+                showToast('Failed to save coupon', 'error');
+            }
+        });
+    }
+
     // Initial Fetch
     if (tableBody) fetchMenu();
 
@@ -421,6 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(target === 'section-orders') fetchOrders();
                     if(target === 'section-users') fetchUsers();
                     if(target === 'section-extras') renderExtras();
+                    if(target === 'section-coupons') fetchCoupons();
                     if(target === 'section-staff' && typeof fetchStaff === 'function') fetchStaff();
                     if(target === 'section-reviews') fetchAdminReviews();
                     if(target === 'section-analytics') {
@@ -563,8 +725,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 fulfillmentBadge = '<span style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; background: #f58852; color: #fff; border: 1px solid #d47647; font-size: 12px; font-weight: 500;">Pending</span>';
             } else if(order.status === 'preparing') {
                 fulfillmentBadge = '<span style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; background: #295cf0; color: #fff; border: 1px solid #1c4bc2; font-size: 12px; font-weight: 500;">Preparing</span>';
-            } else if(order.status === 'complete_awaiting_pickup' || order.status === 'out_for_delivery') {
+            } else if(order.status === 'complete_awaiting_pickup') {
                 fulfillmentBadge = '<span style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; background: #1E3E62; color: #fff; border: 1px solid #162f4a; font-size: 12px; font-weight: 500;">Ready</span>';
+            } else if(order.status === 'out_for_delivery') {
+                fulfillmentBadge = '<span style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; background: #6c5ce7; color: #fff; border: 1px solid #5849c4; font-size: 12px; font-weight: 500;">Delivering</span>';
             } else if(order.status === 'delivered') {
                 fulfillmentBadge = '<span style="display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; background: #488f73; color: #fff; border: 1px solid #367059; font-size: 12px; font-weight: 500;">Delivered</span>';
             } else if(order.status === 'cancelled') {
@@ -596,11 +760,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <a href="#" onclick="updateOrderPayment(${order.id}, 'paid')" style="padding: 4px 8px; font-size: 11px; background: #b7e6cd; color: #000; border: 1px solid #9ad9b5; border-radius: 4px; text-decoration: none;">Paid</a>
                                 <a href="#" onclick="updateOrderPayment(${order.id}, 'pending')" style="padding: 4px 8px; font-size: 11px; background: #f58852; color: #fff; border: 1px solid #d47647; border-radius: 4px; text-decoration: none;">Pending</a>
                             </div>
-
+ 
                             <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">Fulfillment</div>
                             <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                                 <a href="#" onclick="updateOrderStatus(${order.id}, 'pending')" style="padding: 4px 8px; font-size: 11px; background: #f58852; color: #fff; border: 1px solid #d47647; border-radius: 4px; text-decoration: none;">Pending</a>
                                 <a href="#" onclick="updateOrderStatus(${order.id}, 'preparing')" style="padding: 4px 8px; font-size: 11px; background: #295cf0; color: #fff; border: 1px solid #1c4bc2; border-radius: 4px; text-decoration: none;">Preparing</a>
+                                <a href="#" onclick="updateOrderStatus(${order.id}, 'out_for_delivery')" style="padding: 4px 8px; font-size: 11px; background: #6c5ce7; color: #fff; border: 1px solid #5849c4; border-radius: 4px; text-decoration: none;">Delivering</a>
                                 <a href="#" onclick="updateOrderStatus(${order.id}, 'complete_awaiting_pickup')" style="padding: 4px 8px; font-size: 11px; background: #1E3E62; color: #fff; border: 1px solid #162f4a; border-radius: 4px; text-decoration: none;">Ready</a>
                                 <a href="#" onclick="updateOrderStatus(${order.id}, 'delivered')" style="padding: 4px 8px; font-size: 11px; background: #488f73; color: #fff; border: 1px solid #367059; border-radius: 4px; text-decoration: none;">Delivered</a>
                                 <a href="#" onclick="updateOrderStatus(${order.id}, 'cancelled')" style="padding: 4px 8px; font-size: 11px; background: #d41a1a; color: #fff; border: 1px solid #a81515; border-radius: 4px; text-decoration: none;">Cancelled</a>
@@ -1198,13 +1363,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
+            const photoThumbnail = r.photo 
+                ? `<br><a href="${r.photo}" target="_blank" style="margin-top: 4px; display: inline-block;"><img src="${r.photo}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"></a>`
+                : '';
+
             tr.innerHTML = `
                 <td style="text-align: center;"><input type="checkbox"></td>
                 <td>#${r.id}</td>
                 <td><strong>${customerName}</strong></td>
                 <td>${itemName}</td>
                 <td>${starsHtml}</td>
-                <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.review_text || ''}">${r.review_text || '<i style="color: #999;">No text</i>'}</td>
+                <td style="max-width: 250px; white-space: normal;" title="${r.review_text || ''}">
+                    <div>${r.review_text || '<i style="color: #999;">No text</i>'}</div>
+                    ${photoThumbnail}
+                </td>
                 <td>${reviewDate}</td>
                 <td style="text-align: right;">
                     <a href="javascript:;" onclick="deleteReview(${r.id})" class="btn btn-default btn-xs" style="color: #c42d2d;"><i class="ph ph-trash"></i> Delete</a>
