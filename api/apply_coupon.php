@@ -51,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'code' => $coupon['code'],
             'type' => $coupon['type'],
             'value' => $coupon['value'],
+            'min_order_amount' => $coupon['min_order_amount'],
             'discount' => $discount
         ];
 
@@ -59,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'code' => $coupon['code'],
             'type' => $coupon['type'],
             'value' => $coupon['value'],
+            'min_order_amount' => $coupon['min_order_amount'],
             'discount' => $discount,
             'message' => 'Coupon applied successfully!'
         ]);

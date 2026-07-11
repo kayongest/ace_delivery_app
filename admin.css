@@ -870,3 +870,35 @@ body.dark-theme .nav-pills .nav-link.active {
         left: 0;
     }
 }
+
+/* Custom Grid Rows & Columns & Modal Sizes */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -10px;
+    margin-left: -10px;
+}
+.col-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+.modal-lg {
+    max-width: 800px !important;
+}
+
+@media (max-width: 768px) {
+    .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

@@ -498,59 +498,84 @@ $isAdmin = $_SESSION['role'] === 'admin';
     
     <!-- Toast Notification Container -->
     <div id="admin-modal" class="modal-overlay hidden">
-        <div class="modal-content glass admin-modal-content">
+        <div class="modal-content glass admin-modal-content modal-lg">
             <h2 id="admin-modal-title">Add New Item</h2>
             <form id="admin-form" enctype="multipart/form-data">
                 <input type="hidden" id="item-id">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="item-name" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="item-category" required class="form-input">
-                        <option value="coffee">Coffee</option>
-                        <option value="tea">Tea</option>
-                        <option value="burgers">Burgers</option>
-                        <option value="sandwiches">Sandwiches</option>
-                        <option value="pizza">Pizza</option>
-                        <option value="omelettes">Omelettes</option>
-                        <option value="sides">Sides</option>
-                        <option value="extras">Extras</option>
-                        <option value="smoothies">Smoothies</option>
-                        <option value="shots">Shots</option>
-                        <option value="shakes">Shakes</option>
-                        <option value="iced">Iced Drinks</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Pricing Option</label>
-                    <div style="display: flex; gap: 20px; margin-top: 8px; margin-bottom: 8px;">
-                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
-                            <input type="radio" name="price-type" id="price-type-free" value="free" style="accent-color: var(--brand-red);"> Free Extra
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
-                            <input type="radio" name="price-type" id="price-type-paid" value="paid" checked style="accent-color: var(--brand-red);"> Paid / Set Price
-                        </label>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="item-name" required class="form-input">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="item-category" required class="form-input">
+                                <option value="coffee">Coffee</option>
+                                <option value="tea">Tea</option>
+                                <option value="burgers">Burgers</option>
+                                <option value="sandwiches">Sandwiches</option>
+                                <option value="pizza">Pizza</option>
+                                <option value="omelettes">Omelettes</option>
+                                <option value="sides">Sides</option>
+                                <option value="extras">Extras</option>
+                                <option value="smoothies">Smoothies</option>
+                                <option value="shots">Shots</option>
+                                <option value="shakes">Shakes</option>
+                                <option value="iced">Iced Drinks</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group" id="price-input-container">
-                    <label>Price (RWF)</label>
-                    <input type="number" id="item-price" required class="form-input" min="0" placeholder="e.g. 500">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="item-desc" rows="3" required class="form-input"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Image Upload</label>
-                    <input type="file" id="item-image" accept="image/*" class="form-input">
-                    <div style="margin-top: 10px;">
-                        <img id="image-preview" src="" alt="Preview" style="max-width: 100px; max-height: 100px; display: none; border-radius: 4px;">
-                        <span id="current-image-path" style="display: none; font-size: 0.85em; color: #aaa; margin-left: 10px;"></span>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Pricing Option</label>
+                            <div style="display: flex; gap: 20px; margin-top: 8px; margin-bottom: 8px;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
+                                    <input type="radio" name="price-type" id="price-type-free" value="free" style="accent-color: var(--brand-red);"> Free Extra
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
+                                    <input type="radio" name="price-type" id="price-type-paid" value="paid" checked style="accent-color: var(--brand-red);"> Paid / Set Price
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group" id="price-input-container">
+                            <label>Price (RWF)</label>
+                            <input type="number" id="item-price" required class="form-input" min="0" placeholder="e.g. 500">
+                        </div>
                     </div>
                 </div>
-                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%;">
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="item-desc" rows="3" required class="form-input"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>Image Upload</label>
+                            <input type="file" id="item-image" accept="image/*" class="form-input">
+                            <div style="margin-top: 10px; display: flex; align-items: center; gap: 15px;">
+                                <img id="image-preview" src="" alt="Preview" style="max-width: 100px; max-height: 100px; display: none; border-radius: 4px;">
+                                <span id="current-image-path" style="display: none; font-size: 0.85em; color: #aaa;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
                     <div>
                         <button type="button" class="btn" style="background: #ff4d4f; color: white; display: none;" id="admin-delete-btn">Delete</button>
                     </div>
