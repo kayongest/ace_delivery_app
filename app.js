@@ -166,6 +166,10 @@ function renderCart() {
                 ? `<span style="font-size: 11px; opacity: 0.8; display: block; margin-top: 2px; color: var(--brand-red); font-weight: 500;">Normally served with ${suggestion}</span>` 
                 : '';
                 
+            const itemPriceDisplay = parseInt(item.price) === 0 
+                ? '<span style="color: #2ed573; font-weight: 700; font-size: 12px; letter-spacing: 0.5px;">FREE</span>' 
+                : `RWF ${item.price}`;
+
             const cartItem = document.createElement('div');
             cartItem.className = 'cart-item-modern';
             cartItem.innerHTML = `
@@ -173,7 +177,7 @@ function renderCart() {
                     <img src="${item.image || 'images/ace_cafe.png'}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="flex-grow: 1; display: flex; flex-direction: column;">
                         <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${item.name}</span>
-                        <span style="color: var(--brand-red); font-weight: 700; font-size: 13px; margin-top: 2px;">RWF ${item.price}</span>
+                        <span style="color: var(--brand-red); font-weight: 700; font-size: 13px; margin-top: 2px;">${itemPriceDisplay}</span>
                         ${suggestionHtml}
                     </div>
                     <div style="display: flex; align-items: center; background: rgba(122, 28, 36, 0.08); border-radius: 8px; padding: 4px; border: 1px solid rgba(122, 28, 36, 0.15); margin-left: 10px;">
@@ -212,30 +216,31 @@ function renderCart() {
         }
         
         // Condiment Extras Section
-        const extrasDiv = document.createElement('div');
-        extrasDiv.style.cssText = "border-top: 1px dashed rgba(122, 28, 36, 0.2); margin-top: 15px; padding-top: 15px;";
-        extrasDiv.innerHTML = `
-            <p style="font-size: 12px; font-weight: 700; color: var(--brand-red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Add Extras:</p>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
-                    <span style="color: var(--text-color); font-weight: 500;">Avocado <span style="opacity: 0.7; font-size: 10px;">(500)</span></span>
-                    <button onclick="event.stopPropagation(); addToCart(9001)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+        const dbExtras = menuData.filter(i => i.category === 'extras');
+        if (dbExtras.length > 0) {
+            const extrasDiv = document.createElement('div');
+            extrasDiv.style.cssText = "border-top: 1px dashed rgba(122, 28, 36, 0.2); margin-top: 15px; padding-top: 15px;";
+            
+            const extrasGridHtml = dbExtras.map(extra => {
+                const priceDisplay = parseInt(extra.price) === 0 
+                    ? '<span style="color: #2ed573; font-weight: bold;">FREE</span>' 
+                    : extra.price;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+                        <span style="color: var(--text-color); font-weight: 500;">${extra.name} <span style="opacity: 0.7; font-size: 10px;">(${priceDisplay})</span></span>
+                        <button onclick="event.stopPropagation(); addToCart(${extra.id})" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
+                    </div>
+                `;
+            }).join('');
+            
+            extrasDiv.innerHTML = `
+                <p style="font-size: 12px; font-weight: 700; color: var(--brand-red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Add Extras:</p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    ${extrasGridHtml}
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
-                    <span style="color: var(--text-color); font-weight: 500;">Kachumbari <span style="opacity: 0.7; font-size: 10px;">(500)</span></span>
-                    <button onclick="event.stopPropagation(); addToCart(9002)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
-                    <span style="color: var(--text-color); font-weight: 500;">Mayonnaise <span style="opacity: 0.7; font-size: 10px;">(300)</span></span>
-                    <button onclick="event.stopPropagation(); addToCart(9003)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px;">
-                    <span style="color: var(--text-color); font-weight: 500;">Ketchup <span style="opacity: 0.7; font-size: 10px;">(200)</span></span>
-                    <button onclick="event.stopPropagation(); addToCart(9004)" style="background: none; border: none; color: var(--brand-red); font-weight: bold; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;">+</button>
-                </div>
-            </div>
-        `;
-        cartItemsContainer.appendChild(extrasDiv);
+            `;
+            cartItemsContainer.appendChild(extrasDiv);
+        }
         
         const cartSubtotalElement = document.getElementById('cart-subtotal');
         if (cartSubtotalElement) {

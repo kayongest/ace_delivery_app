@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuData = await response.json();
                 filteredMenuData = [...menuData];
                 renderGrid();
+                renderExtras();
             } else {
                 console.error('Failed to fetch menu');
             }
@@ -146,6 +147,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Helper to sync Free/Paid radio options with price input
+    function updatePriceTypeToggles(price) {
+        const isFree = price !== '' && parseInt(price) === 0;
+        const freeRadio = document.getElementById('price-type-free');
+        const paidRadio = document.getElementById('price-type-paid');
+        const priceInputContainer = document.getElementById('price-input-container');
+        const priceInput = document.getElementById('item-price');
+        
+        if (isFree) {
+            if (freeRadio) freeRadio.checked = true;
+            if (priceInputContainer) priceInputContainer.style.display = 'none';
+            if (priceInput) {
+                priceInput.required = false;
+                priceInput.value = 0;
+            }
+        } else {
+            if (paidRadio) paidRadio.checked = true;
+            if (priceInputContainer) priceInputContainer.style.display = 'block';
+            if (priceInput) {
+                priceInput.required = true;
+                priceInput.value = price;
+            }
+        }
+    }
+
     // Open Modal
     function openModal(isEdit = false, item = null) {
         modal.classList.remove('hidden');
@@ -163,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('current-image-path').textContent = item.image ? 'Current: ' + item.image : '';
             document.getElementById('current-image-path').style.display = item.image ? 'inline' : 'none';
             
+            updatePriceTypeToggles(item.price);
+            
             if(deleteBtn) {
                 deleteBtn.style.display = 'inline-block';
                 deleteBtn.onclick = () => {
@@ -177,6 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('image-preview').style.display = 'none';
             document.getElementById('current-image-path').style.display = 'none';
             if(deleteBtn) deleteBtn.style.display = 'none';
+            
+            updatePriceTypeToggles('');
         }
     }
 
@@ -187,6 +217,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(addBtn) addBtn.addEventListener('click', () => openModal(false));
     if(closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    // Pricing Option Radio event listeners
+    const freeRadio = document.getElementById('price-type-free');
+    const paidRadio = document.getElementById('price-type-paid');
+    const priceInputContainer = document.getElementById('price-input-container');
+    const priceInput = document.getElementById('item-price');
+
+    if (freeRadio && paidRadio) {
+        freeRadio.addEventListener('change', () => {
+            if (freeRadio.checked) {
+                if (priceInputContainer) priceInputContainer.style.display = 'none';
+                if (priceInput) {
+                    priceInput.required = false;
+                    priceInput.value = 0;
+                }
+            }
+        });
+        
+        paidRadio.addEventListener('change', () => {
+            if (paidRadio.checked) {
+                if (priceInputContainer) priceInputContainer.style.display = 'block';
+                if (priceInput) {
+                    priceInput.required = true;
+                    if (priceInput.value == 0) priceInput.value = '';
+                }
+            }
+        });
+    }
 
     // Form Submission
     if(form) form.addEventListener('submit', async (e) => {
@@ -260,6 +318,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- Extras Management ---
+    function renderExtras() {
+        const previewGrid = document.getElementById('admin-extras-preview-grid');
+        const listGrid = document.getElementById('admin-extras-list');
+        if (!previewGrid || !listGrid) return;
+        
+        const extras = menuData.filter(item => item.category === 'extras');
+        
+        // Update stats
+        const countLabel = document.getElementById('extras-count-label');
+        if(countLabel) {
+            countLabel.textContent = `${extras.length} Extras`;
+        }
+
+        // 1. Render Storefront Preview Grid
+        previewGrid.innerHTML = extras.map(extra => {
+            const priceDisplay = parseInt(extra.price) === 0 
+                ? '<span style="color: #2ed573; font-weight: bold;">FREE</span>' 
+                : extra.price;
+            return `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(122, 28, 36, 0.05); border: 1px solid rgba(122, 28, 36, 0.1); padding: 6px 10px; border-radius: 6px; font-size: 12px; opacity: 0.9;">
+                    <span style="color: var(--text-color); font-weight: 500;">${extra.name} <span style="opacity: 0.7; font-size: 10px;">(${priceDisplay})</span></span>
+                    <span style="color: var(--brand-red); font-weight: bold; font-size: 16px; padding: 0 4px; cursor: default;">+</span>
+                </div>
+            `;
+        }).join('') || '<div style="color: #8c9ea6; font-size: 12px; grid-column: span 2;">No extras found. Add one below!</div>';
+
+        // 2. Render Administration Grid
+        listGrid.innerHTML = '';
+        extras.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'dealer-card';
+            const imgSrc = item.image ? item.image : "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2280%22%20height%3D%2280%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2080%2080%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23E3F0EE%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%231A3B47%22%20font-family%3D%22Arial%22%20font-size%3D%2214px%22%3ENo Img%3C%2Ftext%3E%3C%2Fsvg%3E";
+            
+            card.innerHTML = `
+                <div class="card-image-wrapper">
+                    <img src="${imgSrc}" class="card-img" alt="${item.name}">
+                </div>
+                <div class="card-body">
+                    <div class="card-header-row">
+                        <span class="card-category">${parseInt(item.price) === 0 ? '<span style="color: #2ed573; font-weight: bold;">FREE</span>' : `RWF ${item.price}`}</span>
+                    </div>
+                    <h3 class="card-title">${item.name}</h3>
+                    <p class="card-desc">${item.description || 'No description'}</p>
+                    <div class="card-actions">
+                        <button onclick="editItem(${item.id})" class="btn-action btn-edit" title="Edit Item" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #1A3B47; font-family: inherit;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            Edit
+                        </button>
+                        <button onclick="deleteItem(${item.id})" class="btn-action btn-delete" title="Delete Item" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #ff4757; font-family: inherit;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            listGrid.appendChild(card);
+        });
+    }
+
+    const addExtraBtn = document.getElementById('add-new-extra-btn');
+    if (addExtraBtn) {
+        addExtraBtn.addEventListener('click', () => {
+            openModal(false);
+            modalTitle.textContent = 'Add New Extra';
+            document.getElementById('item-category').value = 'extras';
+        });
+    }
+
     // Initial Fetch
     if (tableBody) fetchMenu();
 
@@ -293,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sec.style.display = 'block';
                     if(target === 'section-orders') fetchOrders();
                     if(target === 'section-users') fetchUsers();
+                    if(target === 'section-extras') renderExtras();
                     if(target === 'section-staff' && typeof fetchStaff === 'function') fetchStaff();
                     if(target === 'section-reviews') fetchAdminReviews();
                     if(target === 'section-analytics') {

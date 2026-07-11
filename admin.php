@@ -46,6 +46,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <?php endif; ?>
             <button class="admin-tab-btn <?= !$isAdmin ? 'active' : '' ?>" data-target="section-orders" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: <?= !$isAdmin ? '#1A3B47' : '#8c9ea6' ?>; border-bottom: 2px solid <?= !$isAdmin ? '#1A3B47' : 'transparent' ?>; cursor: pointer;">Orders</button>
             <?php if ($isAdmin): ?>
+            <button class="admin-tab-btn" data-target="section-extras" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Extras</button>
             <button class="admin-tab-btn" data-target="section-users" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Users</button>
             <button class="admin-tab-btn" data-target="section-staff" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Staff</button>
             <button class="admin-tab-btn" data-target="section-reviews" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Reviews</button>
@@ -79,6 +80,36 @@ $isAdmin = $_SESSION['role'] === 'admin';
             
             <!-- Pagination Container -->
             <div id="admin-menu-pagination" style="display: flex; justify-content: center; margin-top: 30px; gap: 8px;"></div>
+        </div>
+
+        <div id="section-extras" class="admin-section" style="display: none;">
+            <header class="dashboard-header">
+                <div class="dashboard-title-area">
+                    <h2>Extras & Condiments</h2>
+                    <div class="dashboard-stats">
+                        <span id="extras-count-label" class="stat-highlight">0 Extras</span>
+                        <span class="stat-icon">↗</span>
+                        <span class="stat-text">Manage condiment add-ons</span>
+                    </div>
+                </div>
+                <button id="add-new-extra-btn" class="btn btn-manage-light" style="padding: 8px 16px;">+ Add New Extra</button>
+            </header>
+
+            <!-- Preview of what it looks like on the storefront -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; margin-bottom: 30px; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                <p style="font-size: 11px; font-weight: bold; color: #8c9ea6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Storefront Preview:</p>
+                <div style="border-top: 1px dashed rgba(122, 28, 36, 0.2); padding-top: 15px;">
+                    <p style="font-size: 12px; font-weight: 700; color: var(--brand-red); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Add Extras:</p>
+                    <div id="admin-extras-preview-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <!-- Dynamically populated storefront preview cards -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table/Grid of Extras with full CRUD actions -->
+            <div class="dealer-grid" id="admin-extras-list">
+                <!-- Populated by admin.js -->
+            </div>
         </div>
         <?php endif; ?>
 
@@ -452,6 +483,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                         <option value="pizza">Pizza</option>
                         <option value="omelettes">Omelettes</option>
                         <option value="sides">Sides</option>
+                        <option value="extras">Extras</option>
                         <option value="smoothies">Smoothies</option>
                         <option value="shots">Shots</option>
                         <option value="shakes">Shakes</option>
@@ -459,8 +491,19 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Pricing Option</label>
+                    <div style="display: flex; gap: 20px; margin-top: 8px; margin-bottom: 8px;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
+                            <input type="radio" name="price-type" id="price-type-free" value="free" style="accent-color: var(--brand-red);"> Free Extra
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text-color);">
+                            <input type="radio" name="price-type" id="price-type-paid" value="paid" checked style="accent-color: var(--brand-red);"> Paid / Set Price
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group" id="price-input-container">
                     <label>Price (RWF)</label>
-                    <input type="number" id="item-price" required class="form-input">
+                    <input type="number" id="item-price" required class="form-input" min="0" placeholder="e.g. 500">
                 </div>
                 <div class="form-group">
                     <label>Description</label>
