@@ -902,8 +902,10 @@ window.openProfileModal = function() {
     if (!currentUser) return;
     const modal = document.getElementById('profile-modal');
     document.getElementById('profile-name').value = currentUser.full_name || '';
+    document.getElementById('profile-email').value = currentUser.email || '';
     document.getElementById('profile-phone').value = currentUser.phone || '';
     document.getElementById('profile-address').value = currentUser.address || '';
+    document.getElementById('profile-points-val').textContent = currentUser.points || 0;
     
     const preview = document.getElementById('profile-preview-img');
     const placeholder = document.getElementById('profile-placeholder-img');
@@ -929,7 +931,17 @@ window.closeProfileModal = function() {
 const closeProfileBtn = document.getElementById('close-profile-btn');
 if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfileModal);
 
+const closeProfileBtnTop = document.getElementById('close-profile-btn-top');
+if (closeProfileBtnTop) closeProfileBtnTop.addEventListener('click', closeProfileModal);
+
+const profileAvatarTrigger = document.getElementById('profile-avatar-trigger');
 const profileImgInput = document.getElementById('profile-image-input');
+if (profileAvatarTrigger && profileImgInput) {
+    profileAvatarTrigger.addEventListener('click', () => {
+        profileImgInput.click();
+    });
+}
+
 if (profileImgInput) {
     profileImgInput.addEventListener('change', function(e) {
         const file = e.target.files[0];

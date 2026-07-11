@@ -312,12 +312,16 @@ $orderDate = date("F j, Y, g:i a", strtotime($order['created_at']));
             // Temporarily hide actions for PDF
             actions.style.display = 'none';
             
+            // Calculate height dynamically
+            const heightInPx = element.offsetHeight;
+            const heightInMm = (heightInPx * 0.264583) + 12; // 0.264583 mm per pixel + margins
+            
             const opt = {
-                margin:       10,
+                margin:       5,
                 filename:     'AceCafe_Receipt_<?= $order['id'] ?>.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: [80, 200], orientation: 'portrait' } // thermal receipt size approx
+                jsPDF:        { unit: 'mm', format: [80, heightInMm], orientation: 'portrait' }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {

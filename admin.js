@@ -1256,7 +1256,7 @@ window.generatePDF = function(orderId) {
     `).join('');
 
     const htmlString = `
-        <div style="padding: 30px; font-family: 'Inter', sans-serif; color: #111; background: #fff; width: 400px; box-sizing: border-box;">
+        <div id="temp-pdf-receipt" style="padding: 30px; font-family: 'Inter', sans-serif; color: #111; background: #fff; width: 400px; box-sizing: border-box; position: absolute; left: -9999px; top: -9999px;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h1 style="margin: 0; font-family: 'Magra', sans-serif; font-size: 24px;">ACE CAFE</h1>
                 <p style="margin: 5px 0 0; color: #666; font-size: 14px;">Receipt for Order #${order.id}</p>
@@ -1281,15 +1281,29 @@ window.generatePDF = function(orderId) {
         </div>
     `;
 
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlString.trim();
+    const element = tempDiv.firstChild;
+    document.body.appendChild(element);
+
+    const heightInPx = element.offsetHeight;
+    const heightInInches = (heightInPx / 96) + 0.25; // 96 px per inch + margins
+
     const opt = {
         margin:       0,
         filename:     `Ace_Cafe_Receipt_Order_${order.id}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: [4.16, 6], orientation: 'portrait' }
+        jsPDF:        { unit: 'in', format: [4.16, heightInInches], orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(htmlString).save();
+    element.style.position = 'static';
+    element.style.left = 'auto';
+    element.style.top = 'auto';
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.remove();
+    });
 };
 
 // Theme Toggle Logic
