@@ -902,3 +902,104 @@ body.dark-theme .nav-pills .nav-link.active {
         max-width: 100%;
     }
 }
+
+/* --- Inventory System Styles --- */
+.active-subtab {
+    background-color: #1A3B47 !important;
+    color: #fff !important;
+    border-color: #1A3B47 !important;
+    box-shadow: 0 4px 10px rgba(26, 59, 71, 0.2);
+}
+
+.inventory-subtab-pane {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.recipe-row {
+    animation: slideInRow 0.2s ease-out;
+}
+
+@keyframes slideInRow {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Table styles for Inventory */
+#section-inventory table th {
+    font-family: "Magra", sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    background-color: rgba(26, 59, 71, 0.03);
+    border-bottom: 2px solid var(--border-color);
+}
+
+#section-inventory table td {
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+/* Dark mode overrides for inventory */
+body.dark-theme #section-inventory table th {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text-dark);
+}
+
+body.dark-theme #section-inventory table td {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-theme #section-inventory .glass {
+    background: #202b30 !important;
+    border-color: #2e3c42 !important;
+}
+
+body.dark-theme .recipe-ingredient-unit-badge {
+    color: #a3b8cc !important;
+}
+
+body.dark-theme #batches-modal-title,
+body.dark-theme #recipe-modal-title,
+body.dark-theme #inventory-item-modal-title {
+    color: var(--accent-gold) !important;
+}
+
+body.dark-theme #add-batch-form h3,
+body.dark-theme #batches-modal-title + div h3 {
+    color: var(--text-dark) !important;
+}
+
+body.dark-theme #recipe-ingredients-container select,
+body.dark-theme #recipe-ingredients-container input,
+body.dark-theme #add-batch-form input,
+body.dark-theme #inventory-item-form input,
+body.dark-theme #inventory-item-form select {
+    background-color: #1a2327 !important;
+    border-color: #2e3c42 !important;
+    color: #fff !important;
+}
+
+/* Buffet Planner Specific Styles */
+.planner-item-row:hover {
+    background-color: rgba(26, 59, 71, 0.02);
+    transition: background-color 0.2s ease;
+}
+
+body.dark-theme .planner-item-row:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+body.dark-theme .planner-item-row {
+    border-bottom-color: #2e3c42 !important;
+}
+
+body.dark-theme .servings-input {
+    background-color: #1a2327 !important;
+    border-color: #2e3c42 !important;
+    color: #fff !important;
+}

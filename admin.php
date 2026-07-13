@@ -52,6 +52,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <button class="admin-tab-btn" data-target="section-staff" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Staff</button>
             <button class="admin-tab-btn" data-target="section-reviews" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Reviews</button>
             <button class="admin-tab-btn" data-target="section-analytics" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Analytics</button>
+            <button class="admin-tab-btn" data-target="section-inventory" style="background: none; border: none; font-size: 16px; font-weight: 600; padding: 10px 0; color: #8c9ea6; border-bottom: 2px solid transparent; cursor: pointer;">Inventory</button>
             <?php endif; ?>
         </div>
 
@@ -492,6 +493,174 @@ $isAdmin = $_SESSION['role'] === 'admin';
                 </table>
             </div>
         </div>
+
+        <div id="section-inventory" class="admin-section" style="display: none;">
+            <header class="dashboard-header" style="flex-wrap: wrap;">
+                <div class="dashboard-title-area">
+                    <h2>Inventory & Stock Control</h2>
+                    <div class="dashboard-stats">
+                        <span class="stat-highlight">Control Perishables & Ingredients</span>
+                    </div>
+                </div>
+                <div class="dashboard-actions" style="display: flex; gap: 12px; align-items: center;">
+                    <button class="btn btn-secondary active-subtab" id="subtab-levels-btn" onclick="switchInventorySubtab('levels')" style="padding: 8px 16px;">Stock Levels</button>
+                    <button class="btn btn-secondary" id="subtab-recipes-btn" onclick="switchInventorySubtab('recipes')" style="padding: 8px 16px;">Recipes</button>
+                    <button class="btn btn-secondary" id="subtab-reports-btn" onclick="switchInventorySubtab('reports')" style="padding: 8px 16px;">Reports</button>
+                    <button class="btn btn-secondary" id="subtab-planner-btn" onclick="switchInventorySubtab('planner')" style="padding: 8px 16px;">Buffet Planner</button>
+                </div>
+            </header>
+
+            <!-- Subtab 1: Stock Levels -->
+            <div id="inv-subtab-levels" class="inventory-subtab-pane">
+                <div class="dashboard-header" style="padding: 0 0 15px 0; border: none; margin-bottom: 15px;">
+                    <h3>Ingredient Stock Levels</h3>
+                    <button id="add-ingredient-btn" class="btn btn-manage-light" style="padding: 8px 16px;">+ Add Ingredient</button>
+                </div>
+                <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
+                    <table id="inventoryTable" class="display" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                <th style="padding: 12px 16px;">Name</th>
+                                <th style="padding: 12px 16px;">Category</th>
+                                <th style="padding: 12px 16px;">In Stock</th>
+                                <th style="padding: 12px 16px;">Reorder Level</th>
+                                <th style="padding: 12px 16px;">Target Level</th>
+                                <th style="padding: 12px 16px;">Status</th>
+                                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-items-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subtab 2: Recipes -->
+            <div id="inv-subtab-recipes" class="inventory-subtab-pane" style="display: none;">
+                <div class="dashboard-header" style="padding: 0 0 15px 0; border: none; margin-bottom: 15px;">
+                    <h3>Menu Item Recipes (Ingredient Mapping)</h3>
+                </div>
+                <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
+                    <table id="inventoryRecipesTable" class="display" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                <th style="padding: 12px 16px;">Menu Item</th>
+                                <th style="padding: 12px 16px;">Category</th>
+                                <th style="padding: 12px 16px;">Price</th>
+                                <th style="padding: 12px 16px;">Ingredients Count</th>
+                                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-recipes-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subtab 4: Buffet Planner -->
+            <div id="inv-subtab-planner" class="inventory-subtab-pane" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Buffet Planner & Stock Allocator</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary btn-sm" onclick="quickPresetPlanner(50)" style="padding:6px 12px; font-weight:bold; background:#e1e3e5; color:#1A3B47;"><i class="ph ph-users"></i> Set all to 50 Guests</button>
+                        <button class="btn btn-secondary btn-sm" onclick="quickPresetPlanner(100)" style="padding:6px 12px; font-weight:bold; background:#e1e3e5; color:#1A3B47;"><i class="ph ph-users-three"></i> Set all to 100 Guests</button>
+                        <button class="btn btn-secondary btn-sm" onclick="quickPresetPlanner(0)" style="padding:6px 12px; font-weight:bold; background:#fbebeb; color:#c42d2d; border-color:#fbebeb;"><i class="ph ph-x-circle"></i> Reset</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 20px; align-items: start;">
+                    <!-- Menu Item Servings Select -->
+                    <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); max-height: 550px; overflow-y: auto;">
+                        <h4 style="margin-top:0; color:#1A3B47; border-bottom:1px solid #eee; padding-bottom:8px;">1. Planned Menu Servings</h4>
+                        <p style="font-size:12px; color:#666; margin-bottom:15px;">Specify number of guests / takeaways planned for each menu item.</p>
+                        <div id="planner-menu-items-list" style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Dynamically loaded list of menu items with inputs -->
+                        </div>
+                    </div>
+
+                    <!-- Allocation Results -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:15px;">
+                                <h4 style="margin:0; color:#1A3B47;">2. Ingredient Requirements & Stock Status</h4>
+                                <button class="btn btn-primary btn-sm" onclick="printBuffetShoppingList()" style="background:#1A3B47; border-color:#1A3B47; display:flex; align-items:center; gap:5px;"><i class="ph ph-printer"></i> Print Shopping List</button>
+                            </div>
+                            <div id="planner-results-area" style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border-color); color: #8c9ea6;">
+                                            <th style="padding: 10px 8px;">Ingredient</th>
+                                            <th style="padding: 10px 8px;">Category</th>
+                                            <th style="padding: 10px 8px;">Total Needed</th>
+                                            <th style="padding: 10px 8px;">Currently In Stock</th>
+                                            <th style="padding: 10px 8px;">Projected Leftover</th>
+                                            <th style="padding: 10px 8px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="planner-allocation-results">
+                                        <tr><td colspan="6" style="text-align:center; padding:15px; color:#666;">Set servings on the left to calculate stock requirements.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subtab 3: Reports -->
+            <div id="inv-subtab-reports" class="inventory-subtab-pane" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Stock & Purchase Reports</h3>
+                    <button class="btn btn-primary" onclick="printInventoryReport()" style="display: flex; align-items: center; gap: 8px; background: #1A3B47; border-color: #1A3B47;"><i class="ph ph-printer"></i> Print Report</button>
+                </div>
+                
+                <div id="printable-report-area">
+                    <!-- Report Part 1: Current Stock remaining -->
+                    <div class="card glass" style="padding: 20px; margin-bottom: 30px;">
+                        <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Remaining Stock Overview</h4>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                    <th style="padding: 12px 16px;">Ingredient Name</th>
+                                    <th style="padding: 12px 16px;">Category</th>
+                                    <th style="padding: 12px 16px;">In Stock Quantity</th>
+                                    <th style="padding: 12px 16px;">Status</th>
+                                    <th style="padding: 12px 16px; color: #c42d2d;">Expired Quantity</th>
+                                    <th style="padding: 12px 16px; color: #d97706;">Expiring Soon (3 days)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-stock-list">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Report Part 2: Restock / Purchase shopping list -->
+                    <div class="card glass" style="padding: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Purchase / restock Shopping List</h4>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">List of ingredients that are out of stock or have fallen below the configured reorder threshold.</p>
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                    <th style="padding: 12px 16px;">Ingredient Name</th>
+                                    <th style="padding: 12px 16px;">Category</th>
+                                    <th style="padding: 12px 16px;">In Stock</th>
+                                    <th style="padding: 12px 16px;">Reorder Level</th>
+                                    <th style="padding: 12px 16px;">Target Level</th>
+                                    <th style="padding: 12px 16px; font-weight: bold; color: #1A3B47;">Required Order Quantity</th>
+                                    <th style="padding: 12px 16px;">Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-purchase-list">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php endif; ?>
 
     </div>
@@ -549,6 +718,33 @@ $isAdmin = $_SESSION['role'] === 'admin';
                         <div class="form-group" id="price-input-container">
                             <label>Price (RWF)</label>
                             <input type="number" id="item-price" required class="form-input" min="0" placeholder="e.g. 500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Track Stock</label>
+                            <select id="item-track-stock" class="form-input">
+                                <option value="0">No (Unlimited)</option>
+                                <option value="1">Yes (Track Quantities)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-4" id="stock-qty-group" style="display: none;">
+                        <div class="form-group">
+                            <label>Stock Quantity</label>
+                            <input type="number" id="item-stock-qty" class="form-input" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Availability</label>
+                            <select id="item-is-available" class="form-input">
+                                <option value="1">Available (In Stock)</option>
+                                <option value="0">Unavailable (Out of Stock)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -732,6 +928,146 @@ $isAdmin = $_SESSION['role'] === 'admin';
                 <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" id="coupon-close-modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Inventory Item Modal -->
+    <div id="inventory-item-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-content glass admin-modal-content" style="max-width: 450px;">
+            <h2 id="inventory-item-modal-title">Manage Ingredient</h2>
+            <form id="inventory-item-form">
+                <input type="hidden" id="inventory-item-id">
+                
+                <div class="form-group">
+                    <label>Ingredient Name</label>
+                    <input type="text" id="inventory-item-name" required class="form-input" placeholder="e.g. Meat, Rice, Tomatoes">
+                </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="inventory-item-category" required class="form-input">
+                        <option value="perishable">Perishable (Meat, Vegetables)</option>
+                        <option value="non_perishable">Non-Perishable (Rice, Beans, Flour)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Measurement Unit</label>
+                    <input type="text" id="inventory-item-unit" required class="form-input" placeholder="e.g. kg, grams, liters, pieces, bags">
+                </div>
+                
+                <div class="form-group">
+                    <label>Initial Quantity in Stock</label>
+                    <input type="number" id="inventory-item-current-qty" step="0.01" required class="form-input" min="0" value="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Reorder Level (Safety Stock Alert Threshold)</label>
+                    <input type="number" id="inventory-item-reorder-level" step="0.01" required class="form-input" min="0" value="5.00" placeholder="Alert threshold">
+                </div>
+
+                <div class="form-group">
+                    <label>Target Quantity (Ideal Restock Target)</label>
+                    <input type="number" id="inventory-item-target-qty" step="0.01" required class="form-input" min="0" value="20.00" placeholder="Target restock amount">
+                </div>
+
+                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('inventory-item-modal').classList.add('hidden')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Ingredient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Batches Modal -->
+    <div id="inventory-batches-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-content glass admin-modal-content modal-lg" style="max-width: 750px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="batches-modal-title" style="margin: 0;">Ingredient Batches</h2>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('inventory-batches-modal').classList.add('hidden')">Close</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
+                <!-- Add Batch Form -->
+                <div style="border-right: 1px solid #eee; padding-right: 20px;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #1A3B47;">Add New Batch</h3>
+                    <form id="add-batch-form">
+                        <input type="hidden" id="batch-inventory-item-id">
+                        
+                        <div class="form-group">
+                            <label>Batch Number / ID</label>
+                            <input type="text" id="batch-number" class="form-input" placeholder="e.g. BATCH-001 or datecode">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Quantity Received</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="number" id="batch-qty-received" step="0.01" required class="form-input" min="0.01">
+                                <span id="batch-unit-label" style="font-weight: bold; color: #555;">kg</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Received Date</label>
+                            <input type="date" id="batch-received-date" required class="form-input">
+                        </div>
+
+                        <div class="form-group" id="batch-expiration-group">
+                            <label>Expiration Date</label>
+                            <input type="date" id="batch-expiration-date" class="form-input">
+                            <small style="color: #666; font-size: 11px;">Leave blank for non-perishable ingredients.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Add Batch</button>
+                    </form>
+                </div>
+                
+                <!-- Batch List Table -->
+                <div>
+                    <h3 style="margin-top: 0; font-size: 16px; color: #1A3B47;">Current Batches</h3>
+                    <div style="max-height: 350px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border-color); color: #8c9ea6;">
+                                    <th style="padding: 8px;">Batch</th>
+                                    <th style="padding: 8px;">Received</th>
+                                    <th style="padding: 8px;">Expiry</th>
+                                    <th style="padding: 8px;">Qty Left</th>
+                                    <th style="padding: 8px; text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batches-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Recipe Modal -->
+    <div id="recipe-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-content glass admin-modal-content" style="max-width: 550px;">
+            <h2 id="recipe-modal-title">Configure Recipe</h2>
+            <p id="recipe-modal-subtitle" style="font-size: 13px; color: #666; margin-bottom: 20px;">Define raw ingredients needed to prepare 1 serving of this dish.</p>
+            
+            <form id="recipe-form">
+                <input type="hidden" id="recipe-menu-id">
+                
+                <div id="recipe-ingredients-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                    <!-- Rows of ingredients, populated dynamically -->
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="addRecipeIngredientRow()" style="padding: 6px 12px; font-size: 13px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                    <i class="ph ph-plus"></i> Add Ingredient
+                </button>
+
+                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('recipe-modal').classList.add('hidden')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Recipe</button>
                 </div>
             </form>
         </div>

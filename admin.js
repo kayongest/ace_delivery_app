@@ -96,11 +96,28 @@ document.addEventListener('DOMContentLoaded', () => {
         pageItems.forEach(item => {
             const card = document.createElement('div');
             card.className = 'dealer-card';
+            card.style.position = 'relative';
             
             // Generate initials or fallback image if needed, though they should have images
             const imgSrc = item.image ? item.image : "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2280%22%20height%3D%2280%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2080%2080%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23E3F0EE%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%231A3B47%22%20font-family%3D%22Arial%22%20font-size%3D%2214px%22%3ENo Img%3C%2Ftext%3E%3C%2Fsvg%3E";
 
+            let stockBadge = '';
+            if (item.is_available == 0) {
+                stockBadge = '<span style="background:#ff4d4f; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; position:absolute; top:10px; right:10px; z-index:5;">Unavailable</span>';
+            } else if (item.track_stock == 1) {
+                if (item.stock_quantity == 0) {
+                    stockBadge = '<span style="background:#ff4d4f; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; position:absolute; top:10px; right:10px; z-index:5;">Out of Stock</span>';
+                } else if (item.stock_quantity <= 5) {
+                    stockBadge = `<span style="background:#ffa940; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; position:absolute; top:10px; right:10px; z-index:5;">Low Stock (${item.stock_quantity})</span>`;
+                } else {
+                    stockBadge = `<span style="background:#52c41a; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; position:absolute; top:10px; right:10px; z-index:5;">Stock: ${item.stock_quantity}</span>`;
+                }
+            } else {
+                stockBadge = '<span style="background:#52c41a; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; position:absolute; top:10px; right:10px; z-index:5;">Unlimited</span>';
+            }
+
             card.innerHTML = `
+                ${stockBadge}
                 <div class="dealer-img-container">
                     <img src="${imgSrc}" alt="${item.name}" class="dealer-img">
                 </div>
@@ -176,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(isEdit = false, item = null) {
         modal.classList.remove('hidden');
         const deleteBtn = document.getElementById('admin-delete-btn');
+        const stockQtyGroup = document.getElementById('stock-qty-group');
         if (isEdit && item) {
             modalTitle.textContent = 'Edit Item';
             document.getElementById('item-id').value = item.id;
@@ -188,6 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('image-preview').style.display = item.image ? 'block' : 'none';
             document.getElementById('current-image-path').textContent = item.image ? 'Current: ' + item.image : '';
             document.getElementById('current-image-path').style.display = item.image ? 'inline' : 'none';
+            
+            document.getElementById('item-track-stock').value = item.track_stock || '0';
+            document.getElementById('item-stock-qty').value = item.stock_quantity !== null ? item.stock_quantity : '0';
+            document.getElementById('item-is-available').value = item.is_available !== null ? item.is_available : '1';
+            if (stockQtyGroup) {
+                stockQtyGroup.style.display = item.track_stock == 1 ? 'block' : 'none';
+            }
             
             updatePriceTypeToggles(item.price);
             
@@ -206,6 +231,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('current-image-path').style.display = 'none';
             if(deleteBtn) deleteBtn.style.display = 'none';
             
+            document.getElementById('item-track-stock').value = '0';
+            document.getElementById('item-stock-qty').value = '0';
+            document.getElementById('item-is-available').value = '1';
+            if (stockQtyGroup) stockQtyGroup.style.display = 'none';
+            
             updatePriceTypeToggles('');
         }
     }
@@ -217,6 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(addBtn) addBtn.addEventListener('click', () => openModal(false));
     if(closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    // Track Stock selector listener
+    const trackStockSelect = document.getElementById('item-track-stock');
+    const stockQtyGroup = document.getElementById('stock-qty-group');
+    if (trackStockSelect && stockQtyGroup) {
+        trackStockSelect.addEventListener('change', () => {
+            stockQtyGroup.style.display = trackStockSelect.value === '1' ? 'block' : 'none';
+        });
+    }
 
     // Pricing Option Radio event listeners
     const freeRadio = document.getElementById('price-type-free');
@@ -257,6 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('category', document.getElementById('item-category').value);
         formData.append('price', document.getElementById('item-price').value);
         formData.append('description', document.getElementById('item-desc').value);
+        formData.append('track_stock', document.getElementById('item-track-stock').value);
+        formData.append('stock_quantity', document.getElementById('item-stock-qty').value);
+        formData.append('is_available', document.getElementById('item-is-available').value);
         
         const imageFile = document.getElementById('item-image').files[0];
         if (imageFile) {
@@ -589,6 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const filterVal = document.getElementById('analytics-date-filter').value;
                         fetchAnalytics(filterVal);
                     }
+                    if(target === 'section-inventory') fetchInventory();
                 } else {
                     sec.style.display = 'none';
                 }
@@ -1605,6 +1648,1020 @@ window.generatePDF = function(orderId) {
         element.remove();
     });
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ==========================================
+    // INVENTORY MANAGEMENT SYSTEM
+    // ==========================================
+    let cachedInventoryItems = [];
+
+    // Switch sub-tabs within the Inventory section
+    window.switchInventorySubtab = function(subtab) {
+        document.querySelectorAll('.inventory-subtab-pane').forEach(pane => pane.style.display = 'none');
+        const activePane = document.getElementById(`inv-subtab-${subtab}`);
+        if (activePane) activePane.style.display = 'block';
+
+        // Toggle button styling
+        const buttons = {
+            levels: document.getElementById('subtab-levels-btn'),
+            recipes: document.getElementById('subtab-recipes-btn'),
+            reports: document.getElementById('subtab-reports-btn'),
+            planner: document.getElementById('subtab-planner-btn')
+        };
+
+        for (const [key, btn] of Object.entries(buttons)) {
+            if (btn) {
+                if (key === subtab) {
+                    btn.classList.add('active-subtab');
+                    btn.style.backgroundColor = '#1A3B47';
+                    btn.style.color = '#fff';
+                } else {
+                    btn.classList.remove('active-subtab');
+                    btn.style.backgroundColor = 'transparent';
+                    btn.style.color = '#1A3B47';
+                }
+            }
+        }
+
+        // Fetch data based on subtab
+        if (subtab === 'levels') renderInventoryItems();
+        if (subtab === 'recipes') renderRecipesGrid();
+        if (subtab === 'reports') fetchInventoryReports();
+        if (subtab === 'planner') loadBuffetPlanner();
+    };
+
+    // Main fetch orchestrator
+    window.fetchInventory = function() {
+        // Default to showing levels subtab
+        switchInventorySubtab('levels');
+    };
+
+    // Load and render inventory items
+    async function renderInventoryItems() {
+        const tbody = document.getElementById('inventory-items-list');
+        if (!tbody) return;
+
+        if ($.fn.DataTable.isDataTable('#inventoryTable')) {
+            $('#inventoryTable').DataTable().destroy();
+        }
+
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading ingredients...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin_inventory.php?action=get_items');
+            const result = await res.json();
+            if (result.status === 'success') {
+                cachedInventoryItems = result.data;
+                tbody.innerHTML = '';
+                if (cachedInventoryItems.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No ingredients added yet.</td></tr>';
+                    return;
+                }
+
+                cachedInventoryItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #eee';
+                    
+                    let statusBadge = '';
+                    const qty = parseFloat(item.current_quantity);
+                    const reorder = parseFloat(item.reorder_level);
+                    if (qty === 0) {
+                        statusBadge = '<span class="badge badge-danger" style="background:#c42d2d;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">Out of Stock</span>';
+                    } else if (qty <= reorder) {
+                        statusBadge = '<span class="badge badge-warning" style="background:#d97706;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">Low Stock</span>';
+                    } else {
+                        statusBadge = '<span class="badge badge-success" style="background:#28a745;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">In Stock</span>';
+                    }
+
+                    row.innerHTML = `
+                        <td style="padding: 12px 16px; font-weight:600;">${item.name}</td>
+                        <td style="padding: 12px 16px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
+                        <td style="padding: 12px 16px; font-weight:bold;">${qty.toFixed(2)} ${item.unit}</td>
+                        <td style="padding: 12px 16px;">${reorder.toFixed(2)} ${item.unit}</td>
+                        <td style="padding: 12px 16px;">${parseFloat(item.target_quantity).toFixed(2)} ${item.unit}</td>
+                        <td style="padding: 12px 16px;">${statusBadge}</td>
+                        <td style="padding: 12px 16px; text-align: right;">
+                            <button class="btn btn-secondary btn-sm" onclick="editInventoryItem(${item.id})" style="padding:4px 8px; font-size:12px; margin-right:5px;"><i class="ph ph-pencil"></i> Edit</button>
+                            ${item.category === 'perishable' ? `<button class="btn btn-secondary btn-sm" onclick="manageBatches(${item.id}, '${item.name}', '${item.unit}')" style="padding:4px 8px; font-size:12px; margin-right:5px; background:#e1e3e5; color:#1A3B47;"><i class="ph ph-package"></i> Batches</button>` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteInventoryItem(${item.id})" style="padding:4px 8px; font-size:12px; background:#c42d2d; color:white; border-color:#c42d2d;"><i class="ph ph-trash"></i> Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Initialize DataTable
+                $('#inventoryTable').DataTable({
+                    responsive: true,
+                    pageLength: 5,
+                    lengthMenu: [5, 10, 25, 50],
+                    pagingType: 'simple_numbers',
+                    language: {
+                        search: "Search:",
+                        paginate: {
+                            previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                            next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                        }
+                    }
+                });
+            } else {
+                showToast(result.message || 'Failed to load ingredients', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Network error loading ingredients', 'error');
+        }
+    }
+
+    // Add ingredient button handler
+    const addIngBtn = document.getElementById('add-ingredient-btn');
+    if (addIngBtn) {
+        addIngBtn.addEventListener('click', () => {
+            document.getElementById('inventory-item-form').reset();
+            document.getElementById('inventory-item-id').value = '';
+            document.getElementById('inventory-item-modal-title').textContent = 'Add New Ingredient';
+            document.getElementById('inventory-item-modal').classList.remove('hidden');
+        });
+    }
+
+    // Save ingredient submit handler
+    const ingForm = document.getElementById('inventory-item-form');
+    if (ingForm) {
+        ingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('inventory-item-id').value;
+            const name = document.getElementById('inventory-item-name').value;
+            const category = document.getElementById('inventory-item-category').value;
+            const unit = document.getElementById('inventory-item-unit').value;
+            const current_quantity = document.getElementById('inventory-item-current-qty').value;
+            const reorder_level = document.getElementById('inventory-item-reorder-level').value;
+            const target_quantity = document.getElementById('inventory-item-target-qty').value;
+
+            try {
+                const res = await fetch('api/admin_inventory.php?action=save_item', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, category, unit, current_quantity, reorder_level, target_quantity })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(result.message);
+                    document.getElementById('inventory-item-modal').classList.add('hidden');
+                    renderInventoryItems();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save ingredient', 'error');
+            }
+        });
+    }
+
+    // Edit inventory item
+    window.editInventoryItem = function(id) {
+        const item = cachedInventoryItems.find(i => i.id == id);
+        if (!item) return;
+
+        document.getElementById('inventory-item-id').value = item.id;
+        document.getElementById('inventory-item-name').value = item.name;
+        document.getElementById('inventory-item-category').value = item.category;
+        document.getElementById('inventory-item-unit').value = item.unit;
+        document.getElementById('inventory-item-current-qty').value = item.current_quantity;
+        document.getElementById('inventory-item-reorder-level').value = item.reorder_level;
+        document.getElementById('inventory-item-target-qty').value = item.target_quantity;
+
+        document.getElementById('inventory-item-modal-title').textContent = 'Edit Ingredient';
+        document.getElementById('inventory-item-modal').classList.remove('hidden');
+    };
+
+    // Delete inventory item
+    window.deleteInventoryItem = function(id) {
+        const item = cachedInventoryItems.find(i => i.id == id);
+        if (!item) return;
+
+        // Use custom confirm modal if exists, else standard confirm
+        const confirmModal = document.getElementById('confirm-modal');
+        if (confirmModal) {
+            document.getElementById('confirm-modal-title').textContent = 'Delete Ingredient';
+            document.getElementById('confirm-modal-message').textContent = `Are you sure you want to delete '${item.name}'? This will also remove any recipe mappings.`;
+            confirmModal.classList.remove('hidden');
+            
+            const okBtn = document.getElementById('confirm-modal-ok');
+            const cancelBtn = document.getElementById('confirm-modal-cancel');
+            
+            const onOk = async () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+                try {
+                    const res = await fetch('api/admin_inventory.php?action=delete_item', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const result = await res.json();
+                    if (result.status === 'success') {
+                        showToast(result.message);
+                        renderInventoryItems();
+                    } else {
+                        showToast(result.message, 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Failed to delete item', 'error');
+                }
+            };
+            
+            const onCancel = () => {
+                confirmModal.classList.add('hidden');
+                cleanup();
+            };
+            
+            function cleanup() {
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+            }
+            
+            okBtn.addEventListener('click', onOk);
+            cancelBtn.addEventListener('click', onCancel);
+        } else {
+            if (confirm(`Delete '${item.name}'?`)) {
+                (async () => {
+                    try {
+                        const res = await fetch('api/admin_inventory.php?action=delete_item', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id })
+                        });
+                        const result = await res.json();
+                        if (result.status === 'success') {
+                            showToast(result.message);
+                            renderInventoryItems();
+                        } else {
+                            showToast(result.message, 'error');
+                        }
+                    } catch (err) {
+                        showToast('Failed to delete item', 'error');
+                    }
+                })();
+            }
+        }
+    };
+
+    // ==========================================
+    // BATCH MANAGEMENT
+    // ==========================================
+    let currentBatchItemName = '';
+    let currentBatchItemUnit = '';
+
+    window.manageBatches = function(itemId, itemName, itemUnit) {
+        currentBatchItemName = itemName;
+        currentBatchItemUnit = itemUnit;
+        
+        document.getElementById('batch-inventory-item-id').value = itemId;
+        document.getElementById('batches-modal-title').textContent = `Manage Batches: ${itemName}`;
+        document.getElementById('batch-unit-label').textContent = itemUnit;
+
+        // Reset the add batch form
+        document.getElementById('add-batch-form').reset();
+        document.getElementById('batch-received-date').value = new Date().toISOString().split('T')[0];
+
+        // Fetch and show current batches
+        fetchAndRenderBatches(itemId);
+
+        document.getElementById('inventory-batches-modal').classList.remove('hidden');
+    };
+
+    async function fetchAndRenderBatches(itemId) {
+        const tbody = document.getElementById('batches-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading batches...</td></tr>';
+
+        try {
+            const res = await fetch(`api/admin_inventory.php?action=get_batches&item_id=${itemId}`);
+            const result = await res.json();
+            if (result.status === 'success') {
+                tbody.innerHTML = '';
+                if (result.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No batches received yet.</td></tr>';
+                    return;
+                }
+
+                result.data.forEach(batch => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #eee';
+                    
+                    const qtyLeft = parseFloat(batch.quantity_remaining);
+                    
+                    let expiryStr = batch.expiration_date || 'N/A';
+                    let expiryStyle = '';
+                    let actionButtons = '';
+
+                    if (batch.status === 'spoiled') {
+                        expiryStr = '<span style="color:#c42d2d;font-weight:bold;">Spoiled/Wasted</span>';
+                    } else if (batch.expiration_date) {
+                        const expDate = new Date(batch.expiration_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const diffTime = expDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays < 0) {
+                            expiryStr = `<span style="color:#c42d2d;font-weight:bold;">Expired (${batch.expiration_date})</span>`;
+                        } else if (diffDays <= 3) {
+                            expiryStr = `<span style="color:#d97706;font-weight:bold;">Expiring soon (${batch.expiration_date})</span>`;
+                        }
+                    }
+
+                    if (qtyLeft > 0 && batch.status !== 'spoiled') {
+                        actionButtons = `
+                            <button class="btn btn-secondary btn-sm" onclick="spoilBatch(${batch.id}, ${itemId})" style="padding:2px 6px; font-size:11px; background:#fbebeb; color:#c42d2d; border-color:#fbebeb; margin-right:4px;"><i class="ph ph-skull"></i> Spoil</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteBatch(${batch.id}, ${itemId})" style="padding:2px 6px; font-size:11px; background:#c42d2d; color:white; border-color:#c42d2d;"><i class="ph ph-trash"></i> Delete</button>
+                        `;
+                    } else {
+                        actionButtons = `<button class="btn btn-danger btn-sm" onclick="deleteBatch(${batch.id}, ${itemId})" style="padding:2px 6px; font-size:11px; background:#c42d2d; color:white; border-color:#c42d2d;"><i class="ph ph-trash"></i> Delete</button>`;
+                    }
+
+                    row.innerHTML = `
+                        <td style="padding: 8px;">${batch.batch_number || 'N/A'}</td>
+                        <td style="padding: 8px;">${batch.received_date}</td>
+                        <td style="padding: 8px;">${expiryStr}</td>
+                        <td style="padding: 8px; font-weight:bold;">${qtyLeft.toFixed(2)} / ${parseFloat(batch.quantity_received).toFixed(2)} ${currentBatchItemUnit}</td>
+                        <td style="padding: 8px; text-align: right;">${actionButtons}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Error: ${result.message}</td></tr>`;
+            }
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:red;">Failed to fetch batches.</td></tr>';
+        }
+    }
+
+    // Save batch form submit handler
+    const batchForm = document.getElementById('add-batch-form');
+    if (batchForm) {
+        batchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inventory_item_id = document.getElementById('batch-inventory-item-id').value;
+            const batch_number = document.getElementById('batch-number').value;
+            const quantity_received = document.getElementById('batch-qty-received').value;
+            const received_date = document.getElementById('batch-received-date').value;
+            const expiration_date = document.getElementById('batch-expiration-date').value;
+
+            try {
+                const res = await fetch('api/admin_inventory.php?action=save_batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inventory_item_id, batch_number, quantity_received, received_date, expiration_date })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(result.message);
+                    fetchAndRenderBatches(inventory_item_id);
+                    renderInventoryItems(); // Refresh quantities on main table
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to add batch', 'error');
+            }
+        });
+    }
+
+    // Spoil batch
+    window.spoilBatch = async function(batchId, itemId) {
+        if (confirm('Mark this batch as spoiled? All remaining quantities will be set to 0 and deducted from stock.')) {
+            try {
+                const res = await fetch('api/admin_inventory.php?action=spoil_batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: batchId })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(result.message);
+                    fetchAndRenderBatches(itemId);
+                    renderInventoryItems();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to adjust batch', 'error');
+            }
+        }
+    };
+
+    // Delete batch
+    window.deleteBatch = async function(batchId, itemId) {
+        if (confirm('Delete this batch? Remaining quantities will be deducted from main stock count.')) {
+            try {
+                const res = await fetch('api/admin_inventory.php?action=delete_batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: batchId })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(result.message);
+                    fetchAndRenderBatches(itemId);
+                    renderInventoryItems();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to delete batch', 'error');
+            }
+        }
+    };
+
+    // ==========================================
+    // RECIPE CONFIGURATION
+    // ==========================================
+    async function renderRecipesGrid() {
+        const tbody = document.getElementById('inventory-recipes-list');
+        if (!tbody) return;
+
+        if ($.fn.DataTable.isDataTable('#inventoryRecipesTable')) {
+            $('#inventoryRecipesTable').DataTable().destroy();
+        }
+
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading menu items...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin_inventory.php?action=get_menu_recipes');
+            const result = await res.json();
+            if (result.status === 'success') {
+                tbody.innerHTML = '';
+                if (result.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No menu items found.</td></tr>';
+                    return;
+                }
+
+                result.data.forEach(menuItem => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #eee';
+
+                    let ingCountBadge = '';
+                    const count = parseInt(menuItem.ingredient_count);
+                    if (count > 0) {
+                        ingCountBadge = `<span style="background:#e8f4fd;color:#007bff;padding:4px 8px;border-radius:4px;font-weight:bold;font-size:12px;">${count} Ingredients Mapped</span>`;
+                    } else {
+                        ingCountBadge = '<span style="background:#fbebeb;color:#c42d2d;padding:4px 8px;border-radius:4px;font-size:12px;">No Recipe Mapped</span>';
+                    }
+
+                    row.innerHTML = `
+                        <td style="padding: 12px 16px; font-weight:600;">${menuItem.name}</td>
+                        <td style="padding: 12px 16px; text-transform:capitalize;">${menuItem.category}</td>
+                        <td style="padding: 12px 16px; font-weight:bold;">RWF ${parseInt(menuItem.price).toLocaleString()}</td>
+                        <td style="padding: 12px 16px;">${ingCountBadge}</td>
+                        <td style="padding: 12px 16px; text-align: right;">
+                            <button class="btn btn-secondary btn-sm" onclick="editRecipe(${menuItem.id}, '${menuItem.name.replace(/'/g, "\\'")}')" style="padding:4px 8px; font-size:12px; background:#1A3B47; color:white; border-color:#1A3B47;"><i class="ph ph-gear"></i> Set Recipe</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Initialize DataTable
+                $('#inventoryRecipesTable').DataTable({
+                    responsive: true,
+                    pageLength: 5,
+                    lengthMenu: [5, 10, 25, 50],
+                    pagingType: 'simple_numbers',
+                    language: {
+                        search: "Search:",
+                        paginate: {
+                            previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                            next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                        }
+                    }
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Error: ${result.message}</td></tr>`;
+            }
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:red;">Failed to fetch menu recipes list.</td></tr>';
+        }
+    }
+
+    // Open edit recipe modal
+    window.editRecipe = async function(menuId, menuName) {
+        document.getElementById('recipe-menu-id').value = menuId;
+        document.getElementById('recipe-modal-title').textContent = `Recipe: ${menuName}`;
+        
+        const container = document.getElementById('recipe-ingredients-container');
+        container.innerHTML = '<div style="text-align:center;padding:20px;">Loading recipe data...</div>';
+
+        document.getElementById('recipe-modal').classList.remove('hidden');
+
+        try {
+            const res = await fetch(`api/admin_inventory.php?action=get_recipe&menu_id=${menuId}`);
+            const result = await res.json();
+            if (result.status === 'success') {
+                container.innerHTML = '';
+                if (result.data.length === 0) {
+                    // Start with one empty row
+                    addRecipeIngredientRow();
+                } else {
+                    result.data.forEach(item => {
+                        addRecipeIngredientRow(item.inventory_item_id, item.quantity_required);
+                    });
+                }
+            } else {
+                container.innerHTML = `<div style="text-align:center;color:red;padding:20px;">Error: ${result.message}</div>`;
+            }
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="text-align:center;color:red;padding:20px;">Failed to load recipe ingredients.</div>';
+        }
+    };
+
+    // Add ingredient row in recipe form modal
+    window.addRecipeIngredientRow = function(selectedId = '', qty = '') {
+        const container = document.getElementById('recipe-ingredients-container');
+        if (!container) return;
+
+        const row = document.createElement('div');
+        row.className = 'recipe-row';
+        row.style.cssText = 'display: flex; gap: 10px; align-items: center; margin-bottom: 10px;';
+
+        // Select options
+        let selectOptions = '<option value="">-- Select Ingredient --</option>';
+        cachedInventoryItems.forEach(item => {
+            const isSelected = item.id == selectedId ? 'selected' : '';
+            selectOptions += `<option value="${item.id}" data-unit="${item.unit}" ${isSelected}>${item.name} (${item.unit})</option>`;
+        });
+
+        row.innerHTML = `
+            <select class="form-input recipe-ingredient-select" style="flex:2;" required onchange="updateRecipeUnitLabel(this)">
+                ${selectOptions}
+            </select>
+            <input type="number" step="0.001" class="form-input recipe-ingredient-qty" style="flex:1;" required value="${qty}" placeholder="Qty (e.g. 0.15)">
+            <span class="recipe-ingredient-unit-badge" style="width:50px; font-weight:bold; color:#666;">
+                ${selectedId ? (cachedInventoryItems.find(i => i.id == selectedId)?.unit || '') : ''}
+            </span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.remove()" style="background:#fbebeb;color:#c42d2d;border-color:#fbebeb;padding:6px 10px;font-weight:bold;">X</button>
+        `;
+
+        container.appendChild(row);
+    };
+
+    // Helper to update unit label in recipe rows
+    window.updateRecipeUnitLabel = function(selectElem) {
+        const selectedOption = selectElem.options[selectElem.selectedIndex];
+        const unit = selectedOption.getAttribute('data-unit') || '';
+        const badge = selectElem.parentElement.querySelector('.recipe-ingredient-unit-badge');
+        if (badge) badge.textContent = unit;
+    };
+
+    // Save recipe form submit handler
+    const recForm = document.getElementById('recipe-form');
+    if (recForm) {
+        recForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const menuId = document.getElementById('recipe-menu-id').value;
+            
+            // Gather rows
+            const rows = document.querySelectorAll('.recipe-row');
+            const ingredients = [];
+            
+            rows.forEach(row => {
+                const select = row.querySelector('.recipe-ingredient-select');
+                const qtyInput = row.querySelector('.recipe-ingredient-qty');
+                
+                const inventory_item_id = select.value;
+                const quantity_required = qtyInput.value;
+                
+                if (inventory_item_id && quantity_required) {
+                    ingredients.push({
+                        inventory_item_id: parseInt(inventory_item_id),
+                        quantity_required: parseFloat(quantity_required)
+                    });
+                }
+            });
+
+            try {
+                const res = await fetch('api/admin_inventory.php?action=save_recipe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ menu_id: menuId, ingredients })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(result.message);
+                    document.getElementById('recipe-modal').classList.add('hidden');
+                    renderRecipesGrid();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save recipe', 'error');
+            }
+        });
+    }
+
+    // ==========================================
+    // INVENTORY REPORTS
+    // ==========================================
+    async function fetchInventoryReports() {
+        const stockTbody = document.getElementById('report-stock-list');
+        const purchaseTbody = document.getElementById('report-purchase-list');
+        if (!stockTbody || !purchaseTbody) return;
+
+        stockTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading stock report...</td></tr>';
+        purchaseTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading shopping list...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin_inventory.php?action=get_report');
+            const result = await res.json();
+            if (result.status === 'success') {
+                const { stock_report, shopping_list } = result.data;
+                
+                // Draw Remaining Stock Overview
+                stockTbody.innerHTML = '';
+                if (stock_report.length === 0) {
+                    stockTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No items recorded.</td></tr>';
+                } else {
+                    stock_report.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #eee';
+
+                        let statusBadge = '';
+                        if (item.stock_status === 'Out of Stock') {
+                            statusBadge = '<span style="color:#c42d2d;font-weight:bold;">Out of Stock</span>';
+                        } else if (item.stock_status === 'Low Stock') {
+                            statusBadge = '<span style="color:#d97706;font-weight:bold;">Low Stock</span>';
+                        } else {
+                            statusBadge = '<span style="color:#28a745;font-weight:bold;">In Stock</span>';
+                        }
+
+                        const expired = parseFloat(item.quantity_expired);
+                        const expiringSoon = parseFloat(item.quantity_expiring_soon);
+
+                        tr.innerHTML = `
+                            <td style="padding:10px 16px; font-weight:600;">${item.name}</td>
+                            <td style="padding:10px 16px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
+                            <td style="padding:10px 16px; font-weight:bold;">${parseFloat(item.current_quantity).toFixed(2)} ${item.unit}</td>
+                            <td style="padding:10px 16px;">${statusBadge}</td>
+                            <td style="padding:10px 16px; font-weight:bold; color:${expired > 0 ? '#c42d2d' : '#666'};">${expired > 0 ? `${expired.toFixed(2)} ${item.unit}` : '-'}</td>
+                            <td style="padding:10px 16px; font-weight:bold; color:${expiringSoon > 0 ? '#d97706' : '#666'};">${expiringSoon > 0 ? `${expiringSoon.toFixed(2)} ${item.unit}` : '-'}</td>
+                        `;
+                        stockTbody.appendChild(tr);
+                    });
+                }
+
+                // Draw restock Shopping List
+                purchaseTbody.innerHTML = '';
+                if (shopping_list.length === 0) {
+                    purchaseTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#28a745;font-weight:bold;padding:20px;">All ingredients are well stocked! No purchase needed.</td></tr>';
+                } else {
+                    shopping_list.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #eee';
+
+                        let priorityStyle = 'color:#666;font-weight:bold;';
+                        if (item.priority.includes('CRITICAL')) {
+                            priorityStyle = 'color:#c42d2d;font-weight:bold;';
+                        } else if (item.priority.includes('URGENT')) {
+                            priorityStyle = 'color:#d97706;font-weight:bold;';
+                        }
+
+                        tr.innerHTML = `
+                            <td style="padding:10px 16px; font-weight:600;">${item.name}</td>
+                            <td style="padding:10px 16px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
+                            <td style="padding:10px 16px;">${parseFloat(item.in_stock).toFixed(2)} ${item.unit}</td>
+                            <td style="padding:10px 16px;">${parseFloat(item.reorder_level).toFixed(2)} ${item.unit}</td>
+                            <td style="padding:10px 16px;">${parseFloat(item.target_quantity).toFixed(2)} ${item.unit}</td>
+                            <td style="padding:10px 16px; font-weight:bold; color:#1A3B47; font-size:15px;">${parseFloat(item.purchase_quantity).toFixed(2)} ${item.unit}</td>
+                            <td style="padding:10px 16px; ${priorityStyle}">${item.priority}</td>
+                        `;
+                        purchaseTbody.appendChild(tr);
+                    });
+                }
+            } else {
+                showToast(result.message || 'Failed to fetch reports', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to load reports data', 'error');
+        }
+    }
+
+    // Print Report Handler
+    window.printInventoryReport = function() {
+        const reportContent = document.getElementById('printable-report-area').innerHTML;
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Ace Cafe - Inventory Report (${new Date().toLocaleDateString()})</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+                    h2 { color: #1A3B47; border-bottom: 2px solid #1A3B47; padding-bottom: 10px; }
+                    h4 { color: #1A3B47; margin: 30px 0 10px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                    th, td { padding: 10px 12px; border: 1px solid #ddd; text-align: left; }
+                    th { background-color: #f7f9fa; color: #1A3B47; }
+                    .header-info { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; }
+                    @media print {
+                        body { padding: 0; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <h2>ACE CAFE - FOOD INVENTORY REPORT</h2>
+                    <button onclick="window.print()" style="padding: 8px 16px; background:#1A3B47; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Print PDF / Print</button>
+                </div>
+                <div class="header-info">
+                    <div><strong>Date Generated:</strong> \${new Date().toLocaleString()}</div>
+                    <div><strong>Generated By:</strong> Admin Dashboard</div>
+                </div>
+                \${reportContent}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
+    // ==========================================
+    // BUFFET PLANNER & STOCK ALLOCATOR
+    // ==========================================
+    let plannerRecipesMap = {};
+    let plannerMenuItems = [];
+
+    async function loadBuffetPlanner() {
+        const container = document.getElementById('planner-menu-items-list');
+        if (!container) return;
+        container.innerHTML = '<div style="text-align:center;padding:20px;">Loading planner items...</div>';
+        
+        try {
+            // Fetch all ingredients to ensure cachedInventoryItems is fresh
+            const itemsRes = await fetch('api/admin_inventory.php?action=get_items');
+            const itemsData = await itemsRes.json();
+            if (itemsData.status === 'success') {
+                cachedInventoryItems = itemsData.data;
+            }
+
+            // Fetch all menu items
+            const res = await fetch('api/admin_inventory.php?action=get_menu_recipes');
+            const result = await res.json();
+            if (result.status === 'success') {
+                // Filter to only items that have ingredients mapped
+                plannerMenuItems = result.data.filter(item => parseInt(item.ingredient_count) > 0);
+                
+                // Fetch recipes for all these items in parallel
+                const recipePromises = plannerMenuItems.map(async (item) => {
+                    const recRes = await fetch(`api/admin_inventory.php?action=get_recipe&menu_id=${item.id}`);
+                    const recData = await recRes.json();
+                    if (recData.status === 'success') {
+                        plannerRecipesMap[item.id] = recData.data;
+                    }
+                });
+                
+                await Promise.all(recipePromises);
+                renderPlannerGrid();
+            } else {
+                container.innerHTML = '<div style="color:red;text-align:center;">Failed to load menu items.</div>';
+            }
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="color:red;text-align:center;">Network error loading planner.</div>';
+        }
+    }
+
+    function renderPlannerGrid() {
+        const container = document.getElementById('planner-menu-items-list');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        if (plannerMenuItems.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#666; padding:20px 0;">No menu items have recipes configured yet. Set recipes in the Recipes tab first.</p>';
+            return;
+        }
+        
+        plannerMenuItems.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'planner-item-row';
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #f0f0f0;';
+            
+            row.innerHTML = `
+                <div style="flex:1;">
+                    <strong style="color:#1A3B47;">${item.name}</strong><br>
+                    <small style="color:#8c9ea6; text-transform:capitalize;">${item.category}</small>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="number" class="form-input servings-input" data-menu-id="${item.id}" value="0" min="0" oninput="calculateAllocation()" style="width:80px; text-align:center; padding:5px 8px;">
+                    <span style="font-size:12px; color:#666; width:60px;">servings</span>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        
+        calculateAllocation();
+    }
+
+    window.calculateAllocation = function() {
+        const resultsTbody = document.getElementById('planner-allocation-results');
+        if (!resultsTbody) return;
+        
+        // Map to accumulate total ingredient requirements
+        const totals = {};
+        
+        // Initialize totals for all items in cachedInventoryItems
+        cachedInventoryItems.forEach(item => {
+            totals[item.id] = {
+                id: item.id,
+                name: item.name,
+                category: item.category,
+                unit: item.unit,
+                in_stock: parseFloat(item.current_quantity),
+                needed: 0.00
+            };
+        });
+        
+        // Gather inputs
+        let activeSelections = 0;
+        const inputs = document.querySelectorAll('.servings-input');
+        inputs.forEach(input => {
+            const menuId = input.getAttribute('data-menu-id');
+            const servings = parseInt(input.value) || 0;
+            if (servings > 0) {
+                activeSelections++;
+                const recipe = plannerRecipesMap[menuId] || [];
+                recipe.forEach(ing => {
+                    const invId = ing.inventory_item_id;
+                    if (totals[invId]) {
+                        totals[invId].needed += parseFloat(ing.quantity_required) * servings;
+                    }
+                });
+            }
+        });
+        
+        if (activeSelections === 0) {
+            resultsTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#666;">Set servings on the left to calculate stock requirements.</td></tr>';
+            return;
+        }
+        
+        // Filter and render
+        resultsTbody.innerHTML = '';
+        
+        Object.values(totals).forEach(item => {
+            if (item.needed > 0) {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #eee';
+                
+                const leftover = item.in_stock - item.needed;
+                
+                let leftoverStr = '';
+                let statusStr = '';
+                
+                if (leftover >= 0) {
+                    leftoverStr = `<span style="color:#28a745; font-weight:bold;">+${leftover.toFixed(2)} ${item.unit}</span>`;
+                    statusStr = '<span class="badge" style="background:#e8fdf0; color:#28a745; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">Sufficient Stock</span>';
+                } else {
+                    const shortage = Math.abs(leftover);
+                    leftoverStr = `<span style="color:#c42d2d; font-weight:bold;">-${shortage.toFixed(2)} ${item.unit}</span>`;
+                    statusStr = `<span class="badge" style="background:#fbebeb; color:#c42d2d; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">Buy ${shortage.toFixed(2)} ${item.unit}</span>`;
+                }
+                
+                tr.innerHTML = `
+                    <td style="padding:10px 8px; font-weight:600;">${item.name}</td>
+                    <td style="padding:10px 8px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
+                    <td style="padding:10px 8px; font-weight:bold; color:#1A3B47;">${item.needed.toFixed(2)} ${item.unit}</td>
+                    <td style="padding:10px 8px;">${item.in_stock.toFixed(2)} ${item.unit}</td>
+                    <td style="padding:10px 8px;">${leftoverStr}</td>
+                    <td style="padding:10px 8px;">${statusStr}</td>
+                `;
+                resultsTbody.appendChild(tr);
+            }
+        });
+    };
+
+    window.quickPresetPlanner = function(qty) {
+        const inputs = document.querySelectorAll('.servings-input');
+        inputs.forEach(input => {
+            input.value = qty;
+        });
+        calculateAllocation();
+    };
+
+    window.printBuffetShoppingList = function() {
+        const tbody = document.getElementById('planner-allocation-results');
+        if (!tbody || tbody.innerText.includes('Set servings')) {
+            alert("Please configure planned servings first to calculate shortages!");
+            return;
+        }
+
+        // Generate print contents
+        let tableRows = '';
+        let totalShortages = 0;
+        
+        const totals = {};
+        cachedInventoryItems.forEach(item => {
+            totals[item.id] = {
+                name: item.name,
+                category: item.category,
+                unit: item.unit,
+                in_stock: parseFloat(item.current_quantity),
+                needed: 0.00
+            };
+        });
+        
+        const inputs = document.querySelectorAll('.servings-input');
+        inputs.forEach(input => {
+            const menuId = input.getAttribute('data-menu-id');
+            const servings = parseInt(input.value) || 0;
+            if (servings > 0) {
+                const recipe = plannerRecipesMap[menuId] || [];
+                recipe.forEach(ing => {
+                    const invId = ing.inventory_item_id;
+                    if (totals[invId]) {
+                        totals[invId].needed += parseFloat(ing.quantity_required) * servings;
+                    }
+                });
+            }
+        });
+        
+        Object.values(totals).forEach(item => {
+            if (item.needed > 0) {
+                const leftover = item.in_stock - item.needed;
+                if (leftover < 0) {
+                    totalShortages++;
+                    const shortage = Math.abs(leftover);
+                    tableRows += `
+                        <tr style="border-bottom:1px solid #ddd;">
+                           <td style="padding:10px; font-weight:bold;">${item.name}</td>
+                           <td style="padding:10px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
+                           <td style="padding:10px;">${item.in_stock.toFixed(2)} ${item.unit}</td>
+                           <td style="padding:10px;">${item.needed.toFixed(2)} ${item.unit}</td>
+                           <td style="padding:10px; color:#c42d2d; font-weight:bold; font-size:14px;">${shortage.toFixed(2)} ${item.unit}</td>
+                        </tr>
+                    `;
+                }
+            }
+        });
+        
+        if (totalShortages === 0) {
+            alert("No shortages detected for the planned buffet! You have enough stock for everything.");
+            return;
+        }
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Buffet Shopping List - Ace Cafe</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 45px; color:#333; }
+                    h2 { color:#1A3B47; border-bottom:2px solid #1A3B47; padding-bottom:10px; margin-bottom:5px; }
+                    p { margin:5px 0; font-size:14px; color:#666; }
+                    table { width:100%; border-collapse:collapse; margin-top:20px; font-size:13px; }
+                    th, td { padding:10px 12px; border:1px solid #ddd; text-align:left; }
+                    th { background-color:#f7f9fa; color:#1A3B47; }
+                    @media print {
+                        button { display:none; }
+                        body { padding:0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2>BUFFET SHOPPING LIST (SHORTAGES)</h2>
+                    <button onclick="window.print()" style="padding:8px 16px; background:#1A3B47; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Print / Save PDF</button>
+                </div>
+                <p><strong>Planned Event Date:</strong> ${new Date().toLocaleDateString()}</p>
+                <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
+                <p style="margin-top:15px;">The following ingredients have insufficient stock to satisfy the planned servings. Purchase the quantities listed below:</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ingredient Name</th>
+                            <th>Category</th>
+                            <th>Currently In Stock</th>
+                            <th>Required for Event</th>
+                            <th>Shortage Quantity to Purchase</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        \${tableRows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+});
 
 // Theme Toggle Logic
 document.addEventListener('DOMContentLoaded', () => {

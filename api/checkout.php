@@ -20,6 +20,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
+        // Validate stock and availability
+        $stockCheckStmt = $pdo->prepare("SELECT name, track_stock, stock_quantity, is_available FROM menu WHERE id = :id FOR UPDATE");
+        $recipeStmt = $pdo->prepare("
+            SELECT r.inventory_item_id, r.quantity_required, i.name, i.current_quantity, i.unit 
+            FROM recipes r
+            JOIN inventory_items i ON r.inventory_item_id = i.id
+            WHERE r.menu_id = :menu_id FOR UPDATE
+        ");
+
+        $ingredientsRequired = [];
+
+        foreach ($data['items'] as $item) {
+            $itemId = intval($item['id']);
+            $qtyOrdered = intval($item['quantity']);
+            
+            $stockCheckStmt->execute([':id' => $itemId]);
+            $menuItem = $stockCheckStmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$menuItem) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Item not found in menu.']);
+                $pdo->rollBack();
+                exit;
+            }
+            
+            if ($menuItem['is_available'] == 0) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => "Sorry, '{$menuItem['name']}' is currently out of stock."]);
+                $pdo->rollBack();
+                exit;
+            }
+            
+            if ($menuItem['track_stock'] == 1) {
+                if ($menuItem['stock_quantity'] < $qtyOrdered) {
+                    http_response_code(400);
+                    echo json_encode(['status' => 'error', 'message' => "Sorry, only {$menuItem['stock_quantity']} of '{$menuItem['name']}' is left in stock."]);
+                    $pdo->rollBack();
+                    exit;
+                }
+            }
+
+            // Aggregate ingredient requirements
+            $recipeStmt->execute([':menu_id' => $itemId]);
+            $recipeIngredients = $recipeStmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($recipeIngredients as $ri) {
+                $invId = intval($ri['inventory_item_id']);
+                if (!isset($ingredientsRequired[$invId])) {
+                    $ingredientsRequired[$invId] = [
+                        'id' => $invId,
+                        'name' => $ri['name'],
+                        'unit' => $ri['unit'],
+                        'current_quantity' => floatval($ri['current_quantity']),
+                        'total_required' => 0.00
+                    ];
+                }
+                $ingredientsRequired[$invId]['total_required'] += floatval($ri['quantity_required']) * $qtyOrdered;
+            }
+        }
+
+        // Validate recipe ingredient levels
+        foreach ($ingredientsRequired as $invId => $ing) {
+            if ($ing['current_quantity'] < $ing['total_required']) {
+                http_response_code(400);
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => "Sorry, we do not have enough ingredients ({$ing['name']}) to prepare this order. Required: {$ing['total_required']} {$ing['unit']}, in stock: {$ing['current_quantity']} {$ing['unit']}."
+                ]);
+                $pdo->rollBack();
+                exit;
+            }
+        }
+
         $subtotal = 0;
         foreach ($data['items'] as $item) {
             $price = isset($item['price']) ? floatval($item['price']) : 0;
@@ -94,14 +166,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $orderId = $pdo->lastInsertId();
         
         $itemStmt = $pdo->prepare("INSERT INTO order_items (order_id, menu_id, quantity, price) VALUES (:order_id, :menu_id, :quantity, :price)");
+        $updateStockStmt = $pdo->prepare("UPDATE menu SET stock_quantity = stock_quantity - :qty WHERE id = :id AND track_stock = 1");
         
         foreach ($data['items'] as $item) {
+            $itemId = intval($item['id']);
+            $qtyOrdered = intval($item['quantity']);
             $itemStmt->execute([
                 ':order_id' => $orderId,
-                ':menu_id' => $item['id'],
-                ':quantity' => $item['quantity'],
+                ':menu_id' => $itemId,
+                ':quantity' => $qtyOrdered,
                 ':price' => $item['price']
             ]);
+            
+            $updateStockStmt->execute([
+                ':qty' => $qtyOrdered,
+                ':id' => $itemId
+            ]);
+        }
+
+        // Deduct recipe ingredients and apply FIFO batch consumption
+        if (!empty($ingredientsRequired)) {
+            $updateInvStmt = $pdo->prepare("UPDATE inventory_items SET current_quantity = current_quantity - :qty WHERE id = :id");
+            $logTransStmt = $pdo->prepare("INSERT INTO inventory_transactions (inventory_item_id, type, quantity, note) VALUES (:id, 'sale', :qty, :note)");
+            
+            $batchSelectStmt = $pdo->prepare("SELECT id, quantity_remaining FROM inventory_batches WHERE inventory_item_id = :id AND quantity_remaining > 0 ORDER BY expiration_date ASC, received_date ASC FOR UPDATE");
+            $batchUpdateStmt = $pdo->prepare("UPDATE inventory_batches SET quantity_remaining = :qty WHERE id = :id");
+
+            foreach ($ingredientsRequired as $invId => $ing) {
+                // Deduct from main inventory
+                $updateInvStmt->execute([
+                    ':qty' => $ing['total_required'],
+                    ':id' => $invId
+                ]);
+                
+                // Log transaction
+                $logTransStmt->execute([
+                    ':id' => $invId,
+                    ':qty' => -$ing['total_required'],
+                    ':note' => "Deducted for Order #$orderId"
+                ]);
+                
+                // FIFO Batch deduction
+                $batchSelectStmt->execute([':id' => $invId]);
+                $batches = $batchSelectStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $remainingToDeduct = $ing['total_required'];
+                foreach ($batches as $batch) {
+                    if ($remainingToDeduct <= 0) break;
+                    
+                    $batchId = intval($batch['id']);
+                    $qtyRemaining = floatval($batch['quantity_remaining']);
+                    
+                    if ($qtyRemaining >= $remainingToDeduct) {
+                        $batchUpdateStmt->execute([
+                            ':qty' => $qtyRemaining - $remainingToDeduct,
+                            ':id' => $batchId
+                        ]);
+                        $remainingToDeduct = 0;
+                    } else {
+                        $remainingToDeduct -= $qtyRemaining;
+                        $batchUpdateStmt->execute([
+                            ':qty' => 0.00,
+                            ':id' => $batchId
+                        ]);
+                    }
+                }
+            }
         }
 
         if ($userId) {

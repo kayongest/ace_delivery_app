@@ -61,27 +61,37 @@ switch ($method) {
             }
         }
         
+        $track_stock = isset($_POST['track_stock']) ? intval($_POST['track_stock']) : 0;
+        $stock_quantity = isset($_POST['stock_quantity']) ? intval($_POST['stock_quantity']) : -1;
+        $is_available = isset($_POST['is_available']) ? intval($_POST['is_available']) : 1;
+
         if ($id) {
             // Update an existing item
             if ($imagePath) {
                 // If a new image was uploaded, update the image field too
-                $stmt = $pdo->prepare("UPDATE menu SET name=:name, price=:price, category=:category, description=:description, image=:image WHERE id=:id");
+                $stmt = $pdo->prepare("UPDATE menu SET name=:name, price=:price, category=:category, description=:description, image=:image, track_stock=:track_stock, stock_quantity=:stock_quantity, is_available=:is_available WHERE id=:id");
                 $params = [
                     ':name' => $name,
                     ':price' => $price,
                     ':category' => $category,
                     ':description' => $description,
                     ':image' => $imagePath,
+                    ':track_stock' => $track_stock,
+                    ':stock_quantity' => $stock_quantity,
+                    ':is_available' => $is_available,
                     ':id' => $id
                 ];
             } else {
                 // Update without changing the existing image
-                $stmt = $pdo->prepare("UPDATE menu SET name=:name, price=:price, category=:category, description=:description WHERE id=:id");
+                $stmt = $pdo->prepare("UPDATE menu SET name=:name, price=:price, category=:category, description=:description, track_stock=:track_stock, stock_quantity=:stock_quantity, is_available=:is_available WHERE id=:id");
                 $params = [
                     ':name' => $name,
                     ':price' => $price,
                     ':category' => $category,
                     ':description' => $description,
+                    ':track_stock' => $track_stock,
+                    ':stock_quantity' => $stock_quantity,
+                    ':is_available' => $is_available,
                     ':id' => $id
                 ];
             }
@@ -99,13 +109,16 @@ switch ($method) {
                 $imagePath = 'images/ace_cafe.png'; // fallback default
             }
             
-            $stmt = $pdo->prepare("INSERT INTO menu (name, price, category, description, image) VALUES (:name, :price, :category, :description, :image)");
+            $stmt = $pdo->prepare("INSERT INTO menu (name, price, category, description, image, track_stock, stock_quantity, is_available) VALUES (:name, :price, :category, :description, :image, :track_stock, :stock_quantity, :is_available)");
             $stmt->execute([
                 ':name' => $name,
                 ':price' => $price,
                 ':category' => $category,
                 ':description' => $description,
-                ':image' => $imagePath
+                ':image' => $imagePath,
+                ':track_stock' => $track_stock,
+                ':stock_quantity' => $stock_quantity,
+                ':is_available' => $is_available
             ]);
             
             echo json_encode(['status' => 'success', 'id' => $pdo->lastInsertId()]);

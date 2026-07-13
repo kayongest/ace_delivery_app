@@ -55,6 +55,7 @@ function renderMenu(items, page = 1) {
     pageItems.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card menu-card glass';
+        card.style.position = 'relative';
         card.setAttribute('onclick', `openModal(${item.id})`);
         
         // Use a default image if none provided
@@ -64,21 +65,39 @@ function renderMenu(items, page = 1) {
         const heartClass = isFav ? 'ph-fill ph-heart' : 'ph ph-heart';
         const heartColor = isFav ? 'var(--brand-red)' : '#ffffff';
 
+        const isSoldOut = item.is_available == 0 || (item.track_stock == 1 && item.stock_quantity == 0);
+        let stockLabel = '';
+        let soldOutOverlay = '';
+        
+        if (isSoldOut) {
+            soldOutOverlay = `<div class="sold-out-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 8; display: flex; align-items: center; justify-content: center; border-radius: 12px;"><span style="background: var(--brand-red, #c42d2d); color: white; padding: 6px 12px; font-weight: bold; border-radius: 4px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Sold Out</span></div>`;
+        } else if (item.track_stock == 1 && item.stock_quantity <= 5) {
+            stockLabel = `<div style="margin-top: 4px; margin-bottom: 2px;"><span style="font-size: 11px; background: rgba(255, 169, 64, 0.15); color: #ffa940; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block;">Only ${item.stock_quantity} left!</span></div>`;
+        }
+
+        const actionButton = isSoldOut 
+            ? `<button class="add-btn disabled" disabled onclick="event.stopPropagation();" style="background: #555 !important; color: #aaa !important; cursor: not-allowed; opacity: 0.7;">Sold Out</button>`
+            : `<button class="add-btn" onclick="event.stopPropagation(); addToCart(${item.id}, event)">Add</button>`;
+
         card.innerHTML = `
+            ${soldOutOverlay}
             <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 50%; padding: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;" onclick="event.stopPropagation(); toggleFavorite(${item.id}, event)">
                 <i class="${heartClass}" style="color: ${heartColor}; font-size: 18px; transition: color 0.3s ease;"></i>
             </div>
             <img class="card-img-top card-img" alt="${item.name}" src="${imgSrc}" style="height: 160px; width: 100%; display: block; object-fit: cover;">
             <div class="card-body" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
               <h5 class="card-title" style="margin-bottom: 2px;">${item.name}</h5>
-              <div style="font-size: 12px; color: gold; margin-bottom: 8px;">
-                  ${item.avg_rating > 0 ? '★ ' + parseFloat(item.avg_rating).toFixed(1) + ' <span style="color:#777">(' + item.review_count + ')</span>' : '<span style="color:#777">No reviews yet</span>'}
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <div style="font-size: 12px; color: gold;">
+                      ${item.avg_rating > 0 ? '★ ' + parseFloat(item.avg_rating).toFixed(1) + ' <span style="color:#777">(' + item.review_count + ')</span>' : '<span style="color:#777">No reviews yet</span>'}
+                  </div>
+                  ${stockLabel}
               </div>
               <p class="card-text card-desc">${item.description ? item.description.substring(0, 75) + '...' : ''}</p>
               
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px dashed var(--border-color); padding-top: 15px;">
                   <p class="item-price" style="margin: 0; font-size: 19px; font-weight: 800;">RWF ${item.price}</p>
-                  <button class="add-btn" onclick="event.stopPropagation(); addToCart(${item.id}, event)">Add</button>
+                  ${actionButton}
               </div>
             </div>
         `;
@@ -307,7 +326,13 @@ window.updateQuantity = (index, newQty) => {
     if (newQty <= 0) {
         cart.splice(index, 1);
     } else {
-        cart[index].quantity = newQty;
+        const cartItem = cart[index];
+        const item = menuData.find(i => i.id === cartItem.id);
+        if (item && item.track_stock == 1 && newQty > item.stock_quantity) {
+            showToast(`Cannot add more. Only ${item.stock_quantity} available in stock.`, 'error');
+            return;
+        }
+        cartItem.quantity = newQty;
     }
     renderCart();
 };
@@ -315,7 +340,21 @@ window.updateQuantity = (index, newQty) => {
 window.addToCart = (id, btnEvent) => {
     const item = menuData.find(i => i.id === id);
     if (item) {
+        const isSoldOut = item.is_available == 0 || (item.track_stock == 1 && item.stock_quantity == 0);
+        if (isSoldOut) {
+            showToast('This item is currently sold out / unavailable.', 'error');
+            return;
+        }
+
         const existingItem = cart.find(i => i.id === id);
+        if (item.track_stock == 1) {
+            const currentQtyInCart = existingItem ? existingItem.quantity : 0;
+            if (currentQtyInCart >= item.stock_quantity) {
+                showToast(`Cannot add more. Only ${item.stock_quantity} available in stock.`, 'error');
+                return;
+            }
+        }
+
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
@@ -576,10 +615,23 @@ window.openModal = (id) => {
     
     fetchAndRenderReviews(id);
     
-    modalAddBtn.onclick = (e) => {
-        addToCart(item.id, e);
-        closeModal();
-    };
+    modalAddBtn.onclick = null;
+    const isSoldOut = item.is_available == 0 || (item.track_stock == 1 && item.stock_quantity == 0);
+    if (isSoldOut) {
+        modalAddBtn.disabled = true;
+        modalAddBtn.innerText = 'Sold Out';
+        modalAddBtn.style.background = '#555';
+        modalAddBtn.style.cursor = 'not-allowed';
+    } else {
+        modalAddBtn.disabled = false;
+        modalAddBtn.innerText = 'Add to Order';
+        modalAddBtn.style.background = '';
+        modalAddBtn.style.cursor = '';
+        modalAddBtn.onclick = (e) => {
+            addToCart(item.id, e);
+            closeModal();
+        };
+    }
     
     if (modal) {
         modal.classList.remove('hidden');
