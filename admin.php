@@ -108,9 +108,22 @@ $isAdmin = $_SESSION['role'] === 'admin';
                 </div>
             </div>
 
-            <!-- Table/Grid of Extras with full CRUD actions -->
-            <div class="dealer-grid" id="admin-extras-list">
-                <!-- Populated by admin.js -->
+            <!-- Table of Extras with full CRUD actions -->
+            <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto; margin-top: 20px;">
+                <table id="extrasTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                            <th style="padding: 12px 16px; width: 60px;">Image</th>
+                            <th style="padding: 12px 16px;">Name</th>
+                            <th style="padding: 12px 16px;">Description</th>
+                            <th style="padding: 12px 16px;">Price</th>
+                            <th style="padding: 12px 16px; text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-extras-list">
+                        <!-- Populated by admin.js -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -128,7 +141,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
             </header>
 
             <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                <table id="couponsTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
                             <th style="padding: 12px 16px;">Code</th>
@@ -647,7 +660,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     <!-- Report Part 1: Current Stock remaining -->
                     <div class="card glass" style="padding: 20px; margin-bottom: 30px; overflow-x: auto;">
                         <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Remaining Stock Overview</h4>
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <table id="reportStockTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                             <thead>
                                 <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
                                     <th style="padding: 12px 16px;">Ingredient Name</th>
@@ -668,7 +681,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     <div class="card glass" style="padding: 20px; overflow-x: auto;">
                         <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Purchase / restock Shopping List</h4>
                         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">List of ingredients that are out of stock or have fallen below the configured reorder threshold.</p>
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                        <table id="reportPurchaseTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                             <thead>
                                 <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
                                     <th style="padding: 12px 16px;">Ingredient Name</th>

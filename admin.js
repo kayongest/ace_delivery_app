@@ -387,37 +387,53 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('') || '<div style="color: #8c9ea6; font-size: 12px; grid-column: span 2;">No extras found. Add one below!</div>';
 
+        // Destroy DataTable if initialized
+        if ($.fn.DataTable.isDataTable('#extrasTable')) {
+            $('#extrasTable').DataTable().destroy();
+        }
+
         // 2. Render Administration Grid
         listGrid.innerHTML = '';
         extras.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'dealer-card';
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #eee';
             const imgSrc = item.image ? item.image : "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2280%22%20height%3D%2280%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2080%2080%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23E3F0EE%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%231A3B47%22%20font-family%3D%22Arial%22%20font-size%3D%2214px%22%3ENo Img%3C%2Ftext%3E%3C%2Fsvg%3E";
             
-            card.innerHTML = `
-                <div class="card-image-wrapper">
-                    <img src="${imgSrc}" class="card-img" alt="${item.name}">
-                </div>
-                <div class="card-body">
-                    <div class="card-header-row">
-                        <span class="card-category">${parseInt(item.price) === 0 ? '<span style="color: #2ed573; font-weight: bold;">FREE</span>' : `RWF ${item.price}`}</span>
-                    </div>
-                    <h3 class="card-title">${item.name}</h3>
-                    <p class="card-desc">${item.description || 'No description'}</p>
-                    <div class="card-actions">
-                        <button onclick="editItem(${item.id})" class="btn-action btn-edit" title="Edit Item" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #1A3B47; font-family: inherit;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            Edit
-                        </button>
-                        <button onclick="deleteItem(${item.id})" class="btn-action btn-delete" title="Delete Item" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #ff4757; font-family: inherit;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Delete
-                        </button>
-                    </div>
-                </div>
+            const priceDisplay = parseInt(item.price) === 0 
+                ? '<span style="color: #2ed573; font-weight: bold;">FREE</span>' 
+                : `RWF ${parseInt(item.price).toLocaleString()}`;
+            
+            tr.innerHTML = `
+                <td style="padding: 12px 16px;">
+                    <img src="${imgSrc}" style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover;" alt="${item.name}">
+                </td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #1A3B47;">${item.name}</td>
+                <td style="padding: 12px 16px; max-width: 250px; white-space: normal;">${item.description || 'No description'}</td>
+                <td style="padding: 12px 16px; font-weight: bold;">${priceDisplay}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                    <button onclick="editItem(${item.id})" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 12px; margin-right: 5px;"><i class="ph ph-pencil"></i> Edit</button>
+                    <button onclick="deleteItem(${item.id})" class="btn btn-danger btn-sm" style="padding: 4px 8px; font-size: 12px; background: #c42d2d; border-color: #c42d2d; color: white;"><i class="ph ph-trash"></i> Delete</button>
+                </td>
             `;
-            listGrid.appendChild(card);
+            listGrid.appendChild(tr);
         });
+
+        // Initialize DataTable
+        if (extras.length > 0) {
+            $('#extrasTable').DataTable({
+                responsive: true,
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                pagingType: 'simple_numbers',
+                language: {
+                    search: "Search:",
+                    paginate: {
+                        previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                        next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                    }
+                }
+            });
+        }
     }
 
     const addExtraBtn = document.getElementById('add-new-extra-btn');
@@ -438,6 +454,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function fetchCoupons() {
         if (!couponsList) return;
+        if ($.fn.DataTable.isDataTable('#couponsTable')) {
+            $('#couponsTable').DataTable().destroy();
+        }
         couponsList.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Loading coupons...</td></tr>';
         
         try {
@@ -456,6 +475,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCoupons() {
         if (!couponsList) return;
+        
+        if ($.fn.DataTable.isDataTable('#couponsTable')) {
+            $('#couponsTable').DataTable().destroy();
+        }
+        
         couponsList.innerHTML = '';
         
         const countLabel = document.getElementById('coupon-count-label');
@@ -477,19 +501,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<span style="background: rgba(255, 71, 87, 0.15); color: #ff4757; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;">Inactive</span>';
             
             const typeDisplay = coupon.type === 'percent' ? 'Percent' : 'Flat';
-            const valueDisplay = coupon.type === 'percent' ? `${coupon.value}%` : `RWF ${coupon.value}`;
+            const valueDisplay = coupon.type === 'percent' ? `${coupon.value}%` : `RWF ${parseInt(coupon.value).toLocaleString()}`;
             
             tr.innerHTML = `
                 <td style="padding: 14px 16px; font-weight: 700; color: var(--text-color); font-family: monospace; font-size: 15px;">${coupon.code}</td>
                 <td style="padding: 14px 16px; color: var(--text-muted);">${typeDisplay}</td>
                 <td style="padding: 14px 16px; font-weight: 600; color: var(--text-color);">${valueDisplay}</td>
-                <td style="padding: 14px 16px; color: var(--text-muted);">RWF ${coupon.min_order_amount}</td>
+                <td style="padding: 14px 16px; color: var(--text-muted);">RWF ${parseInt(coupon.min_order_amount).toLocaleString()}</td>
                 <td style="padding: 14px 16px;">${statusBadge}</td>
                 <td style="padding: 14px 16px; text-align: right;">
-                    <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                        <button class="edit-coupon-btn" data-id="${coupon.id}" style="background: none; border: none; cursor: pointer; color: var(--text-color); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 4px;">Edit</button>
-                        <button class="delete-coupon-btn" data-id="${coupon.id}" style="background: none; border: none; cursor: pointer; color: #ff4757; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 4px;">Delete</button>
-                    </div>
+                    <button class="btn btn-secondary btn-sm edit-coupon-btn" data-id="${coupon.id}" style="padding: 4px 8px; font-size: 12px; margin-right: 5px;"><i class="ph ph-pencil"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm delete-coupon-btn" data-id="${coupon.id}" style="padding: 4px 8px; font-size: 12px; background: #c42d2d; border-color: #c42d2d; color: white;"><i class="ph ph-trash"></i> Delete</button>
                 </td>
             `;
             
@@ -499,6 +521,23 @@ document.addEventListener('DOMContentLoaded', () => {
             
             couponsList.appendChild(tr);
         });
+
+        // Initialize DataTable
+        if (couponData.length > 0) {
+            $('#couponsTable').DataTable({
+                responsive: true,
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                pagingType: 'simple_numbers',
+                language: {
+                    search: "Search:",
+                    paginate: {
+                        previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                        next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                    }
+                }
+            });
+        }
     }
 
     function openCouponModal(isEdit = false, coupon = null) {
@@ -1507,7 +1546,9 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewsTableInstance = $('#reviewsTable').DataTable({
             responsive: true,
             order: [[1, 'desc']],
-            language: { search: "Search:" }
+            language: { search: "Search:" },
+            pageLength: 5,
+            lengthMenu: [5, 10, 25, 50]
         });
     }
 
@@ -2362,6 +2403,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const purchaseTbody = document.getElementById('report-purchase-list');
         if (!stockTbody || !purchaseTbody) return;
 
+        if ($.fn.DataTable.isDataTable('#reportStockTable')) {
+            $('#reportStockTable').DataTable().destroy();
+        }
+        if ($.fn.DataTable.isDataTable('#reportPurchaseTable')) {
+            $('#reportPurchaseTable').DataTable().destroy();
+        }
+
         stockTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading stock report...</td></tr>';
         purchaseTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading shopping list...</td></tr>';
 
@@ -2432,6 +2480,39 @@ document.addEventListener('DOMContentLoaded', () => {
                         purchaseTbody.appendChild(tr);
                     });
                 }
+
+                // Initialize DataTables
+                if (stock_report.length > 0) {
+                    $('#reportStockTable').DataTable({
+                        responsive: true,
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 25, 50],
+                        pagingType: 'simple_numbers',
+                        language: {
+                            search: "Search:",
+                            paginate: {
+                                previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                                next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                            }
+                        }
+                    });
+                }
+                
+                if (shopping_list.length > 0) {
+                    $('#reportPurchaseTable').DataTable({
+                        responsive: true,
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 25, 50],
+                        pagingType: 'simple_numbers',
+                        language: {
+                            search: "Search:",
+                            paginate: {
+                                previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                                next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                            }
+                        }
+                    });
+                }
             } else {
                 showToast(result.message || 'Failed to fetch reports', 'error');
             }
@@ -2458,6 +2539,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     th, td { padding: 10px 12px; border: 1px solid #ddd; text-align: left; }
                     th { background-color: #f7f9fa; color: #1A3B47; }
                     .header-info { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; }
+                    .dt-search, .dt-length, .dt-paging, .dt-info { display: none !important; }
                     @media print {
                         body { padding: 0; }
                         button { display: none; }
@@ -2470,10 +2552,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button onclick="window.print()" style="padding: 8px 16px; background:#1A3B47; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Print PDF / Print</button>
                 </div>
                 <div class="header-info">
-                    <div><strong>Date Generated:</strong> \${new Date().toLocaleString()}</div>
+                    <div><strong>Date Generated:</strong> ${new Date().toLocaleString()}</div>
                     <div><strong>Generated By:</strong> Admin Dashboard</div>
                 </div>
-                \${reportContent}
+                ${reportContent}
             </body>
             </html>
         `);
@@ -2484,6 +2566,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.exportReportToPDF = function() {
         const element = document.getElementById('printable-report-area');
         if (!element) return;
+        
+        // Hide DataTable controls temporarily for clean export
+        const dtControls = element.querySelectorAll('.dt-search, .dt-length, .dt-paging, .dt-info');
+        dtControls.forEach(el => el.style.display = 'none');
         
         const opt = {
             margin:       [15, 15, 15, 15],
@@ -2496,9 +2582,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Generating PDF...');
         html2pdf().set(opt).from(element).save().then(() => {
             showToast('PDF downloaded successfully!');
+            dtControls.forEach(el => el.style.display = '');
         }).catch(err => {
             console.error(err);
             showToast('Failed to generate PDF', 'error');
+            dtControls.forEach(el => el.style.display = '');
         });
     };
 
