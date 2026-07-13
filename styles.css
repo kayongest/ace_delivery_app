@@ -1309,3 +1309,14 @@ body.dark-theme .cart-item-modern {
     background: rgba(122, 28, 36, 0.3);
 }
 
+/* Mobile My Orders Shortcut Button */
+#nav-my-orders-btn-mobile {
+    display: none !important;
+}
+
+@media (max-width: 992px) {
+    #nav-my-orders-btn-mobile {
+        display: flex !important;
+    }
+}
+

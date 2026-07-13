@@ -55,6 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             backdrop-filter: blur(10px);
             text-align: center;
         }
+        @media (max-width: 500px) {
+            .login-container {
+                margin: 40px 16px;
+                padding: 1.5rem;
+            }
+        }
         .form-group {
             margin-bottom: 1rem;
             text-align: left;

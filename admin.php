@@ -502,7 +502,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                         <span class="stat-highlight">Control Perishables & Ingredients</span>
                     </div>
                 </div>
-                <div class="dashboard-actions" style="display: flex; gap: 12px; align-items: center;">
+                <div class="dashboard-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-secondary active-subtab" id="subtab-levels-btn" onclick="switchInventorySubtab('levels')" style="padding: 8px 16px;">Stock Levels</button>
                     <button class="btn btn-secondary" id="subtab-recipes-btn" onclick="switchInventorySubtab('recipes')" style="padding: 8px 16px;">Recipes</button>
                     <button class="btn btn-secondary" id="subtab-reports-btn" onclick="switchInventorySubtab('reports')" style="padding: 8px 16px;">Reports</button>
@@ -516,23 +516,40 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     <h3>Ingredient Stock Levels</h3>
                     <button id="add-ingredient-btn" class="btn btn-manage-light" style="padding: 8px 16px;">+ Add Ingredient</button>
                 </div>
-                <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
-                    <table id="inventoryTable" class="display" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
-                                <th style="padding: 12px 16px;">Name</th>
-                                <th style="padding: 12px 16px;">Category</th>
-                                <th style="padding: 12px 16px;">In Stock</th>
-                                <th style="padding: 12px 16px;">Reorder Level</th>
-                                <th style="padding: 12px 16px;">Target Level</th>
-                                <th style="padding: 12px 16px;">Status</th>
-                                <th style="padding: 12px 16px; text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-items-list">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
+                
+                <!-- Stock Chart & Table Row -->
+                <div class="row">
+                    <!-- Left: Stock Chart Column (col-5) -->
+                    <div id="inventoryStockChartCol" class="col-5" style="display: none;">
+                        <div id="inventoryStockChartContainer" class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                            <h4 style="margin-top: 0; color: #1A3B47; margin-bottom: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 4px;">Stock Level Status <span style="font-weight: normal; color: #8c9ea6; font-size: 12px;">(% of Target Quantity)</span></h4>
+                            <div style="height: 260px; position: relative;">
+                                <canvas id="inventoryStockChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Table Column (col-7/col-12) -->
+                    <div id="inventoryTableCol" class="col-12">
+                        <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); overflow-x: auto;">
+                            <table id="inventoryTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                        <th style="padding: 12px 16px;">Name</th>
+                                        <th style="padding: 12px 16px;">Category</th>
+                                        <th style="padding: 12px 16px;">In Stock</th>
+                                        <th style="padding: 12px 16px;">Reorder Level</th>
+                                        <th style="padding: 12px 16px;">Target Level</th>
+                                        <th style="padding: 12px 16px;">Status</th>
+                                        <th style="padding: 12px 16px; text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-items-list">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -561,7 +578,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
 
             <!-- Subtab 4: Buffet Planner -->
             <div id="inv-subtab-planner" class="inventory-subtab-pane" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="planner-header">
                     <h3>Buffet Planner & Stock Allocator</h3>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-secondary btn-sm" onclick="quickPresetPlanner(50)" style="padding:6px 12px; font-weight:bold; background:#e1e3e5; color:#1A3B47;"><i class="ph ph-users"></i> Set all to 50 Guests</button>
@@ -570,7 +587,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 20px; align-items: start;">
+                <div class="planner-grid">
                     <!-- Menu Item Servings Select -->
                     <div class="glass" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); max-height: 550px; overflow-y: auto;">
                         <h4 style="margin-top:0; color:#1A3B47; border-bottom:1px solid #eee; padding-bottom:8px;">1. Planned Menu Servings</h4>
@@ -611,14 +628,14 @@ $isAdmin = $_SESSION['role'] === 'admin';
 
             <!-- Subtab 3: Reports -->
             <div id="inv-subtab-reports" class="inventory-subtab-pane" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="reports-header">
                     <h3>Stock & Purchase Reports</h3>
                     <button class="btn btn-primary" onclick="printInventoryReport()" style="display: flex; align-items: center; gap: 8px; background: #1A3B47; border-color: #1A3B47;"><i class="ph ph-printer"></i> Print Report</button>
                 </div>
                 
                 <div id="printable-report-area">
                     <!-- Report Part 1: Current Stock remaining -->
-                    <div class="card glass" style="padding: 20px; margin-bottom: 30px;">
+                    <div class="card glass" style="padding: 20px; margin-bottom: 30px; overflow-x: auto;">
                         <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Remaining Stock Overview</h4>
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                             <thead>
@@ -638,7 +655,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                     </div>
 
                     <!-- Report Part 2: Restock / Purchase shopping list -->
-                    <div class="card glass" style="padding: 20px;">
+                    <div class="card glass" style="padding: 20px; overflow-x: auto;">
                         <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Purchase / restock Shopping List</h4>
                         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">List of ingredients that are out of stock or have fallen below the configured reorder threshold.</p>
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
@@ -935,7 +952,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
 
     <!-- Add/Edit Inventory Item Modal -->
     <div id="inventory-item-modal" class="modal-overlay hidden" style="z-index: 10000;">
-        <div class="modal-content glass admin-modal-content" style="max-width: 450px;">
+        <div class="modal-content glass admin-modal-content modal-lg">
             <h2 id="inventory-item-modal-title">Manage Ingredient</h2>
             <form id="inventory-item-form">
                 <input type="hidden" id="inventory-item-id">

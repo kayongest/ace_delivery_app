@@ -885,6 +885,20 @@ body.dark-theme .nav-pills .nav-link.active {
     padding-left: 10px;
     box-sizing: border-box;
 }
+.col-5 {
+    flex: 0 0 41.666667%;
+    max-width: 41.666667%;
+    padding-right: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+.col-7 {
+    flex: 0 0 58.333333%;
+    max-width: 58.333333%;
+    padding-right: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
 .col-12 {
     flex: 0 0 100%;
     max-width: 100%;
@@ -897,7 +911,7 @@ body.dark-theme .nav-pills .nav-link.active {
 }
 
 @media (max-width: 768px) {
-    .col-6 {
+    .col-6, .col-5, .col-7 {
         flex: 0 0 100%;
         max-width: 100%;
     }
@@ -1002,4 +1016,46 @@ body.dark-theme .servings-input {
     background-color: #1a2327 !important;
     border-color: #2e3c42 !important;
     color: #fff !important;
+}
+
+/* Responsive Grid for Buffet Planner */
+.planner-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.8fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .planner-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive Headers for Planner and Reports */
+.planner-header, .reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .planner-header, .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .planner-header div, .reports-header div {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+    }
+    .planner-header button, .reports-header button, .reports-header a {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
 }

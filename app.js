@@ -1434,6 +1434,14 @@ if (navMyOrdersLink) {
     });
 }
 
+const mobileMyOrdersBtn = document.getElementById('nav-my-orders-btn-mobile');
+if (mobileMyOrdersBtn) {
+    mobileMyOrdersBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (navMyOrdersLink) navMyOrdersLink.click();
+    });
+}
+
 // Role Choice Modal Logic
 const roleChoiceModal = document.getElementById('role-choice-modal');
 if (roleChoiceModal) {

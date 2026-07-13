@@ -1712,11 +1712,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await res.json();
             if (result.status === 'success') {
                 cachedInventoryItems = result.data;
+                window.cachedInventoryItems = cachedInventoryItems;
                 tbody.innerHTML = '';
                 if (cachedInventoryItems.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No ingredients added yet.</td></tr>';
+                    window.renderStockChart([]);
                     return;
                 }
+                window.renderStockChart(cachedInventoryItems);
 
                 cachedInventoryItems.forEach(item => {
                     const row = document.createElement('tr');
@@ -1726,11 +1729,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const qty = parseFloat(item.current_quantity);
                     const reorder = parseFloat(item.reorder_level);
                     if (qty === 0) {
-                        statusBadge = '<span class="badge badge-danger" style="background:#c42d2d;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">Out of Stock</span>';
+                        statusBadge = '<span class="badge badge-danger" style="background:#c42d2d;color:white;padding:2px 4px;border-radius:4px;font-size:10px;">Out of Stock</span>';
                     } else if (qty <= reorder) {
-                        statusBadge = '<span class="badge badge-warning" style="background:#d97706;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">Low Stock</span>';
+                        statusBadge = '<span class="badge badge-warning" style="background:#d97706;color:white;padding:2px 4px;border-radius:4px;font-size:10px;">Low Stock</span>';
                     } else {
-                        statusBadge = '<span class="badge badge-success" style="background:#28a745;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">In Stock</span>';
+                        statusBadge = '<span class="badge badge-success" style="background:#28a745;color:white;padding:2px 4px;border-radius:4px;font-size:10px;">In Stock</span>';
                     }
 
                     row.innerHTML = `
@@ -2661,6 +2664,133 @@ document.addEventListener('DOMContentLoaded', () => {
         `);
         printWindow.document.close();
     };
+
+    // ==========================================
+    // INVENTORY STOCK LEVELS CHART
+    // ==========================================
+    let inventoryChartInstance = null;
+
+    window.renderStockChart = function(items) {
+        const container = document.getElementById('inventoryStockChartContainer');
+        const ctx = document.getElementById('inventoryStockChart');
+        if (!ctx || !container) return;
+
+        if (inventoryChartInstance) {
+            inventoryChartInstance.destroy();
+            inventoryChartInstance = null;
+        }
+
+        const chartCol = document.getElementById('inventoryStockChartCol');
+        const tableCol = document.getElementById('inventoryTableCol');
+
+        if (!items || items.length === 0) {
+            container.style.display = 'none';
+            if (chartCol) chartCol.style.display = 'none';
+            if (tableCol) {
+                tableCol.className = 'col-12';
+            }
+            return;
+        }
+        
+        container.style.display = 'block';
+        if (chartCol) chartCol.style.display = 'block';
+        if (tableCol) {
+            tableCol.className = 'col-7';
+        }
+
+        // Sort items by fill percentage: current / target
+        // Display top 10 items with lowest stock percentage
+        const sortedItems = [...items].map(item => {
+            const current = parseFloat(item.current_quantity);
+            const target = parseFloat(item.target_quantity) || 1.0;
+            const pct = Math.min(100, Math.max(0, (current / target) * 100));
+            return {
+                name: item.name,
+                pct: pct,
+                current: current,
+                target: target,
+                unit: item.unit
+            };
+        }).sort((a, b) => a.pct - b.pct).slice(0, 10);
+
+        const labels = sortedItems.map(item => item.name);
+        const dataValues = sortedItems.map(item => item.pct);
+        
+        const backgroundColors = sortedItems.map(item => {
+            if (item.pct <= 25) return 'rgba(196, 45, 45, 0.75)'; // Red
+            if (item.pct <= 75) return 'rgba(217, 119, 6, 0.75)'; // Orange
+            return 'rgba(40, 167, 69, 0.75)'; // Green
+        });
+        const borderColors = sortedItems.map(item => {
+            if (item.pct <= 25) return '#c42d2d';
+            if (item.pct <= 75) return '#d97706';
+            return '#28a745';
+        });
+
+        const isDark = document.body.classList.contains('dark-theme');
+        const textColor = isDark ? '#ffffff' : '#1A3B47';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
+        inventoryChartInstance = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Stock Fill Level (%)',
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    maxBarThickness: 24
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                const item = sortedItems[index];
+                                return ` Fill Level: ${item.pct.toFixed(1)}% (${item.current.toFixed(2)} / ${item.target.toFixed(2)} ${item.unit})`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            color: textColor,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    }
+                }
+            }
+        });
+    };
 });
 
 // Theme Toggle Logic
@@ -2687,6 +2817,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 localStorage.setItem('theme', 'light');
                 if (themeIcon) themeIcon.classList.replace('ph-sun', 'ph-moon');
+            }
+
+            // Redraw inventory stock chart if populated
+            if (window.renderStockChart && window.cachedInventoryItems) {
+                window.renderStockChart(window.cachedInventoryItems);
             }
         });
     }

@@ -144,11 +144,12 @@ try {
             $pdo->beginTransaction();
 
             // Insert new batch
-            $stmt = $pdo->prepare("INSERT INTO inventory_batches (inventory_item_id, batch_number, quantity_received, quantity_remaining, received_date, expiration_date) VALUES (:item_id, :batch_number, :qty_received, :qty_received, :received_date, :exp_date)");
+            $stmt = $pdo->prepare("INSERT INTO inventory_batches (inventory_item_id, batch_number, quantity_received, quantity_remaining, received_date, expiration_date) VALUES (:item_id, :batch_number, :qty_received, :qty_remaining, :received_date, :exp_date)");
             $stmt->execute([
                 ':item_id' => $itemId,
                 ':batch_number' => $batchNum,
                 ':qty_received' => $qtyReceived,
+                ':qty_remaining' => $qtyReceived,
                 ':received_date' => $receivedDate,
                 ':exp_date' => $expDate
             ]);
