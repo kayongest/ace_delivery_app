@@ -1487,10 +1487,84 @@ body.dark-theme .mobile-search-inner input {
     color: #ffffff;
 }
 
+/* Mobile Bottom Nav Bar Styles */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+    height: 72px;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    z-index: 999;
+    align-items: center;
+    justify-content: space-around;
+    border: 1px solid var(--border-color);
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+body.dark-theme .mobile-bottom-nav {
+    background: #11161d;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+.mobile-nav-item {
+    background: transparent;
+    border: none;
+    color: #8c9ea6;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+body.dark-theme .mobile-nav-item {
+    color: #a5b4fc;
+}
+.mobile-nav-item.active {
+    color: #ff7a00;
+}
+.mobile-nav-item-center {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #ff7a00;
+    color: #ff7a00;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 122, 0, 0.15);
+    outline: none;
+    transition: all 0.2s ease;
+    margin-top: -24px; /* Float slightly above the bar */
+}
+body.dark-theme .mobile-nav-item-center {
+    background: #11161d;
+    box-shadow: 0 4px 15px rgba(255, 122, 0, 0.3);
+}
+.mobile-nav-item-center:hover {
+    transform: scale(1.05);
+}
+
 /* Mobile viewport overrides under 768px */
 @media (max-width: 768px) {
+    body {
+        padding-bottom: 100px !important;
+    }
     .navbar {
         display: none !important;
+    }
+    .mobile-bottom-nav {
+        display: flex !important;
     }
     .mobile-storefront-header {
         display: flex !important;

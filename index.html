@@ -61,10 +61,6 @@
                 <button class="mobile-header-btn search-toggle" onclick="toggleMobileSearch(event)" title="Search">
                     <i class="ph ph-magnifying-glass"></i>
                 </button>
-                <button class="mobile-header-btn cart-toggle" onclick="toggleCartSidebar(event)" style="position: relative;" title="Cart">
-                    <i class="ph ph-shopping-cart"></i>
-                    <span id="mobile-cart-count" class="cart-badge">0</span>
-                </button>
                 <button class="mobile-header-btn filter-toggle" onclick="toggleMobileFilter(event)" title="Sort/Filter">
                     <i class="ph ph-sliders"></i>
                 </button>
@@ -584,6 +580,36 @@
 
         <!-- Toast Container -->
         <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="mobile-bottom-nav">
+        <!-- Tab 1: Menu/Catalog -->
+        <button class="mobile-nav-item active" onclick="mobileNavTab('menu', event)" title="Menu">
+            <i class="ph ph-squares-four"></i>
+        </button>
+        
+        <!-- Tab 2: Orders -->
+        <button class="mobile-nav-item" onclick="mobileNavTab('orders', event)" title="My Orders">
+            <i class="ph ph-receipt"></i>
+        </button>
+        
+        <!-- Tab 3: Center floating button (Mockup central + button) -->
+        <button class="mobile-nav-item-center" onclick="toggleCartSidebar(event)" title="My Cart">
+            <!-- mockup thin orange circle + plus sign -->
+            <i class="ph ph-plus" style="font-weight: bold; font-size: 26px;"></i>
+        </button>
+        
+        <!-- Tab 4: Cart Toggle (replaces the bell/moon) -->
+        <button class="mobile-nav-item" onclick="toggleCartSidebar(event)" style="position: relative;" title="My Cart">
+            <i class="ph ph-shopping-cart"></i>
+            <span id="mobile-bottom-cart-badge" class="cart-badge" style="display: none; background: #ff7a00; color: white; border: 2px solid #fff; border-radius: 50%; font-size: 9px; font-weight: bold; position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;">0</span>
+        </button>
+        
+        <!-- Tab 5: Profile -->
+        <button class="mobile-nav-item" onclick="mobileNavTab('profile', event)" title="My Profile">
+            <i class="ph ph-user"></i>
+        </button>
     </div>
 
     <!-- Floating Theme Toggle Button -->

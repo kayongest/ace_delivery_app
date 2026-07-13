@@ -180,8 +180,15 @@ function renderCart() {
     if (cartCountElement) {
         const count = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartCountElement.innerText = count;
+        
         const mobileCartCount = document.getElementById('mobile-cart-count');
         if (mobileCartCount) mobileCartCount.innerText = count;
+        
+        const bottomCartBadge = document.getElementById('mobile-bottom-cart-badge');
+        if (bottomCartBadge) {
+            bottomCartBadge.innerText = count;
+            bottomCartBadge.style.display = count > 0 ? 'flex' : 'none';
+        }
     }
     
     // Update dynamic header count
@@ -394,7 +401,15 @@ window.addToCart = (id, btnEvent) => {
             const card = btn.closest('.menu-card') || btn.closest('.modal-content');
             if (card) {
                 const img = card.querySelector('.card-img') || card.querySelector('#modal-img');
-                const cartIcon = document.getElementById('cart-trigger');
+                let cartIcon = document.getElementById('cart-trigger');
+                
+                // If viewed on mobile, target the bottom nav cart button
+                if (window.innerWidth <= 768) {
+                    const bottomCart = document.getElementById('mobile-bottom-cart-badge') || document.querySelector('.mobile-bottom-nav .ph-shopping-cart');
+                    if (bottomCart) {
+                        cartIcon = bottomCart;
+                    }
+                }
                 
                 if (img && cartIcon) {
                     const clone = img.cloneNode();
