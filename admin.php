@@ -537,6 +537,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                                     <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
                                         <th style="padding: 12px 16px;">Name</th>
                                         <th style="padding: 12px 16px;">Category</th>
+                                        <th style="padding: 12px 16px;">Cost per Unit</th>
                                         <th style="padding: 12px 16px;">In Stock</th>
                                         <th style="padding: 12px 16px;">Reorder Level</th>
                                         <th style="padding: 12px 16px;">Target Level</th>
@@ -957,40 +958,64 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <form id="inventory-item-form">
                 <input type="hidden" id="inventory-item-id">
                 
-                <div class="form-group">
-                    <label>Ingredient Name</label>
-                    <input type="text" id="inventory-item-name" required class="form-input" placeholder="e.g. Meat, Rice, Tomatoes">
-                </div>
-                
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="inventory-item-category" required class="form-input">
-                        <option value="perishable">Perishable (Meat, Vegetables)</option>
-                        <option value="non_perishable">Non-Perishable (Rice, Beans, Flour)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Measurement Unit</label>
-                    <input type="text" id="inventory-item-unit" required class="form-input" placeholder="e.g. kg, grams, liters, pieces, bags">
-                </div>
-                
-                <div class="form-group">
-                    <label>Initial Quantity in Stock</label>
-                    <input type="number" id="inventory-item-current-qty" step="0.01" required class="form-input" min="0" value="0.00">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Ingredient Name</label>
+                            <input type="text" id="inventory-item-name" required class="form-input" placeholder="e.g. Potatoes, Salt, Sugar">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="inventory-item-category" required class="form-input">
+                                <option value="perishable">Perishable (Meat, Vegetables, Potatoes)</option>
+                                <option value="non_perishable">Non-Perishable (Rice, Flour, Salt, Sugar)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Reorder Level (Safety Stock Alert Threshold)</label>
-                    <input type="number" id="inventory-item-reorder-level" step="0.01" required class="form-input" min="0" value="5.00" placeholder="Alert threshold">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Measurement Unit</label>
+                            <input type="text" id="inventory-item-unit" required class="form-input" placeholder="e.g. kg, Litres, pieces">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Cost per Unit (e.g. RWF / Unit)</label>
+                            <input type="number" id="inventory-item-cost" step="0.01" required class="form-input" min="0" value="0.00" placeholder="e.g. 1500">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Target Quantity (Ideal Restock Target)</label>
-                    <input type="number" id="inventory-item-target-qty" step="0.01" required class="form-input" min="0" value="20.00" placeholder="Target restock amount">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Initial Quantity in Stock</label>
+                            <input type="number" id="inventory-item-current-qty" step="0.01" required class="form-input" min="0" value="0.00">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Reorder Level (Alert Threshold)</label>
+                            <input type="number" id="inventory-item-reorder-level" step="0.01" required class="form-input" min="0" value="5.00" placeholder="Alert threshold">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 20px;">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Target Quantity (Ideal Stock Level)</label>
+                            <input type="number" id="inventory-item-target-qty" step="0.01" required class="form-input" min="0" value="20.00" placeholder="Target restock amount">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-modal-footer" style="display: flex; justify-content: space-between; width: 100%; margin-top: 20px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('inventory-item-modal').classList.add('hidden')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Ingredient</button>
                 </div>

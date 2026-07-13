@@ -1736,10 +1736,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         statusBadge = '<span class="badge badge-success" style="background:#28a745;color:white;padding:2px 4px;border-radius:4px;font-size:10px;">In Stock</span>';
                     }
 
+                    const cost = parseFloat(item.cost_per_unit) || 0.00;
+                    const formattedDate = item.updated_at ? item.updated_at.substring(0, 16) : 'N/A';
+
                     row.innerHTML = `
                         <td style="padding: 12px 16px; font-weight:600;">${item.name}</td>
                         <td style="padding: 12px 16px; text-transform:capitalize;">${item.category.replace('_', ' ')}</td>
-                        <td style="padding: 12px 16px; font-weight:bold;">${qty.toFixed(2)} ${item.unit}</td>
+                        <td style="padding: 12px 16px; font-weight:600; color: #1A3B47;">RWF ${cost.toLocaleString()} / ${item.unit}</td>
+                        <td style="padding: 12px 16px;">
+                            <div style="font-weight:bold;">${qty.toFixed(2)} ${item.unit}</div>
+                            <div style="font-size:10px; color:#8c9ea6; margin-top:2px;" class="last-checked-time"><i class="ph ph-clock" style="font-size:10px; vertical-align:middle;"></i> ${formattedDate}</div>
+                        </td>
                         <td style="padding: 12px 16px;">${reorder.toFixed(2)} ${item.unit}</td>
                         <td style="padding: 12px 16px;">${parseFloat(item.target_quantity).toFixed(2)} ${item.unit}</td>
                         <td style="padding: 12px 16px;">${statusBadge}</td>
@@ -1798,12 +1805,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const current_quantity = document.getElementById('inventory-item-current-qty').value;
             const reorder_level = document.getElementById('inventory-item-reorder-level').value;
             const target_quantity = document.getElementById('inventory-item-target-qty').value;
+            const cost_per_unit = document.getElementById('inventory-item-cost').value;
 
             try {
                 const res = await fetch('api/admin_inventory.php?action=save_item', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, name, category, unit, current_quantity, reorder_level, target_quantity })
+                    body: JSON.stringify({ id, name, category, unit, current_quantity, reorder_level, target_quantity, cost_per_unit })
                 });
                 const result = await res.json();
                 if (result.status === 'success') {
@@ -1829,6 +1837,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inventory-item-name').value = item.name;
         document.getElementById('inventory-item-category').value = item.category;
         document.getElementById('inventory-item-unit').value = item.unit;
+        document.getElementById('inventory-item-cost').value = item.cost_per_unit;
         document.getElementById('inventory-item-current-qty').value = item.current_quantity;
         document.getElementById('inventory-item-reorder-level').value = item.reorder_level;
         document.getElementById('inventory-item-target-qty').value = item.target_quantity;

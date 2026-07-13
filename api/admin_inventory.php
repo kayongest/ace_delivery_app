@@ -38,6 +38,7 @@ try {
             $reorder_level = floatval($data['reorder_level']);
             $target_quantity = floatval($data['target_quantity']);
             $current_quantity = isset($data['current_quantity']) ? floatval($data['current_quantity']) : 0.00;
+            $cost_per_unit = isset($data['cost_per_unit']) ? floatval($data['cost_per_unit']) : 0.00;
 
             if (!in_array($category, ['perishable', 'non_perishable'])) {
                 throw new Exception("Invalid category.");
@@ -50,7 +51,7 @@ try {
                 $oldStmt->execute([':id' => $id]);
                 $oldQty = floatval($oldStmt->fetchColumn());
 
-                $stmt = $pdo->prepare("UPDATE inventory_items SET name = :name, category = :category, unit = :unit, reorder_level = :reorder_level, target_quantity = :target_quantity, current_quantity = :current_quantity WHERE id = :id");
+                $stmt = $pdo->prepare("UPDATE inventory_items SET name = :name, category = :category, unit = :unit, reorder_level = :reorder_level, target_quantity = :target_quantity, current_quantity = :current_quantity, cost_per_unit = :cost_per_unit WHERE id = :id");
                 $stmt->execute([
                     ':name' => $name,
                     ':category' => $category,
@@ -58,6 +59,7 @@ try {
                     ':reorder_level' => $reorder_level,
                     ':target_quantity' => $target_quantity,
                     ':current_quantity' => $current_quantity,
+                    ':cost_per_unit' => $cost_per_unit,
                     ':id' => $id
                 ]);
 
@@ -73,14 +75,15 @@ try {
                 }
                 echo json_encode(['status' => 'success', 'message' => 'Inventory item updated successfully.']);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO inventory_items (name, category, unit, reorder_level, target_quantity, current_quantity) VALUES (:name, :category, :unit, :reorder_level, :target_quantity, :current_quantity)");
+                $stmt = $pdo->prepare("INSERT INTO inventory_items (name, category, unit, reorder_level, target_quantity, current_quantity, cost_per_unit) VALUES (:name, :category, :unit, :reorder_level, :target_quantity, :current_quantity, :cost_per_unit)");
                 $stmt->execute([
                     ':name' => $name,
                     ':category' => $category,
                     ':unit' => $unit,
                     ':reorder_level' => $reorder_level,
                     ':target_quantity' => $target_quantity,
-                    ':current_quantity' => $current_quantity
+                    ':current_quantity' => $current_quantity,
+                    ':cost_per_unit' => $cost_per_unit
                 ]);
                 $newItemId = $pdo->lastInsertId();
 
