@@ -3,7 +3,7 @@
 
 body {
     background: #f8fafb;
-    font-family: "Magra", sans-serif;
+    font-family: "Magra", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     margin: 0;
 }
@@ -1133,4 +1133,124 @@ body.dark-theme #users-pagination button.dt-paging-button.current {
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     background: transparent !important;
     color: #ffffff !important;
+}
+
+/* Custom Accordion Styling matching Bootstrap 5 specs */
+.accordion {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.accordion-item {
+    background: #fff;
+    border-radius: 12px !important;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+body.dark-theme .accordion-item {
+    background: var(--bg-card);
+}
+.accordion-header {
+    margin: 0;
+    padding: 0;
+}
+.accordion-button {
+    width: 100%;
+    padding: 18px 24px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1A3B47;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: 'Magra', sans-serif;
+    outline: none;
+    border-radius: 12px;
+}
+body.dark-theme .accordion-button {
+    color: #ffffff;
+}
+.accordion-button::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #8c9ea6;
+    border-bottom: 2px solid #8c9ea6;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    margin-right: 4px;
+    margin-top: -2px;
+}
+body.dark-theme .accordion-button::after {
+    border-color: #a5b4fc;
+}
+.accordion-button:not(.collapsed) {
+    background: rgba(26, 59, 71, 0.02);
+    color: #1A3B47;
+    border-bottom: 1px solid var(--border-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+body.dark-theme .accordion-button:not(.collapsed) {
+    background: rgba(255, 255, 255, 0.02);
+    color: #ffffff;
+}
+.accordion-button:not(.collapsed)::after {
+    transform: rotate(-135deg);
+}
+.accordion-collapse {
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+.accordion-collapse.collapse:not(.show) {
+    display: none;
+}
+.accordion-body {
+    padding: 24px;
+    background: #fff;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+body.dark-theme .accordion-body {
+    background: var(--bg-card);
+}
+
+/* Printing styling */
+@media print {
+    .accordion-collapse.collapse:not(.show) {
+        display: block !important;
+    }
+    .accordion-button::after {
+        display: none !important;
+    }
+    .accordion-item {
+        margin-bottom: 30px;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+}
+
+/* Accordion Header Color Customizations */
+#headingStock .accordion-button {
+    background-color: #37353E !important;
+    color: #ffffff !important;
+}
+#headingPurchase .accordion-button {
+    background-color: #44444E !important;
+    color: #ffffff !important;
+}
+#headingPortions .accordion-button {
+    background-color: #715A5A !important;
+    color: #ffffff !important;
+}
+#headingStock .accordion-button::after,
+#headingPurchase .accordion-button::after,
+#headingPortions .accordion-button::after {
+    border-color: #ffffff !important;
 }

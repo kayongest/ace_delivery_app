@@ -272,10 +272,13 @@ try {
             break;
 
         case 'get_menu_recipes':
-            // Fetch all menu items and a count of how many ingredients they have mapped
-            $sql = "SELECT m.id, m.name, m.category, m.price, COUNT(r.inventory_item_id) AS ingredient_count 
+            // Fetch all menu items, mapped ingredient counts, and portions remaining
+            $sql = "SELECT m.id, m.name, m.category, m.price, 
+                           COUNT(r.inventory_item_id) AS ingredient_count,
+                           MIN(FLOOR(i.current_quantity / r.quantity_required)) AS portions_remaining
                     FROM menu m
                     LEFT JOIN recipes r ON m.id = r.menu_id 
+                    LEFT JOIN inventory_items i ON r.inventory_item_id = i.id
                     GROUP BY m.id 
                     ORDER BY m.category ASC, m.name ASC";
             $stmt = $pdo->query($sql);
@@ -396,11 +399,24 @@ try {
             $stmt2 = $pdo->query($purchaseSql);
             $shoppingList = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
+            // 3. Potential Menu Portions from Current Stock
+            $portionsSql = "SELECT m.id, m.name, m.category, m.price, 
+                                   COUNT(r.inventory_item_id) AS ingredient_count,
+                                   MIN(FLOOR(i.current_quantity / r.quantity_required)) AS portions_remaining
+                            FROM menu m
+                            LEFT JOIN recipes r ON m.id = r.menu_id 
+                            LEFT JOIN inventory_items i ON r.inventory_item_id = i.id
+                            GROUP BY m.id 
+                            ORDER BY m.category ASC, m.name ASC";
+            $stmt3 = $pdo->query($portionsSql);
+            $portionsReport = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
             echo json_encode([
                 'status' => 'success',
                 'data' => [
                     'stock_report' => $stockReport,
-                    'shopping_list' => $shoppingList
+                    'shopping_list' => $shoppingList,
+                    'portions_report' => $portionsReport
                 ]
             ]);
             break;

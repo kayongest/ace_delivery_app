@@ -34,6 +34,29 @@ function renderMenu(items, page = 1) {
     currentFilteredItems = items;
     currentMenuPage = page;
     
+    // Update category title dynamically
+    const menuTitle = document.querySelector('.menu-header h2');
+    if (menuTitle) {
+        const activeBtn = document.querySelector('.category-btn.active');
+        if (activeBtn) {
+            let catName = activeBtn.textContent.trim();
+            if (activeBtn.querySelector('i')) {
+                catName = 'Favorites';
+            }
+            if (window.innerWidth <= 768) {
+                menuTitle.textContent = `${catName} (${items.length})`;
+                const mobileLabel = document.getElementById('mobile-current-category-label');
+                if (mobileLabel) {
+                    mobileLabel.textContent = catName.toUpperCase();
+                }
+            } else {
+                menuTitle.textContent = 'Featured Menu';
+            }
+        } else {
+            menuTitle.textContent = 'Featured Menu';
+        }
+    }
+    
     menuGrid.innerHTML = '';
     const paginationContainer = document.getElementById('pagination-container');
     if(paginationContainer) paginationContainer.innerHTML = '';
@@ -155,7 +178,10 @@ function getServingSuggestion(item) {
 
 function renderCart() {
     if (cartCountElement) {
-        cartCountElement.innerText = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCountElement.innerText = count;
+        const mobileCartCount = document.getElementById('mobile-cart-count');
+        if (mobileCartCount) mobileCartCount.innerText = count;
     }
     
     // Update dynamic header count
@@ -1926,3 +1952,129 @@ function initCheckoutMap(lat = -1.9441, lng = 30.0619) {
         }
     }, 300);
 }
+
+// ==========================================
+// MOBILE STOREFRONT HELPER FUNCTIONS
+// ==========================================
+window.goToDefaultCategory = function() {
+    const allBtn = document.querySelector('.category-btn[data-category="all"]');
+    if (allBtn) {
+        allBtn.click();
+    }
+};
+
+window.toggleMobileCategoryMenu = function(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('mobile-category-menu');
+    if (!menu) return;
+    
+    // Close other menus
+    const filterMenu = document.getElementById('mobile-filter-menu');
+    if (filterMenu) filterMenu.classList.add('hidden');
+    
+    if (menu.classList.contains('hidden')) {
+        menu.innerHTML = '';
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        categoryBtns.forEach(btn => {
+            let catName = btn.textContent.trim();
+            if (btn.querySelector('i')) {
+                catName = 'Favorites';
+            }
+            const catId = btn.dataset.category;
+            
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = catName;
+            div.onclick = (event) => {
+                event.stopPropagation();
+                btn.click();
+                menu.classList.add('hidden');
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            };
+            menu.appendChild(div);
+        });
+        menu.classList.remove('hidden');
+    } else {
+        menu.classList.add('hidden');
+    }
+};
+
+window.toggleMobileSearch = function(e) {
+    if (e) e.stopPropagation();
+    const searchBar = document.getElementById('mobile-search-bar-expanded');
+    if (!searchBar) return;
+    searchBar.classList.toggle('hidden');
+    if (!searchBar.classList.contains('hidden')) {
+        const input = document.getElementById('mobile-search-input');
+        if (input) input.focus();
+    }
+};
+
+window.toggleMobileFilter = function(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('mobile-filter-menu');
+    if (!menu) return;
+    
+    // Close other menus
+    const catMenu = document.getElementById('mobile-category-menu');
+    if (catMenu) catMenu.classList.add('hidden');
+    
+    menu.classList.toggle('hidden');
+};
+
+window.toggleCartSidebar = function(e) {
+    if (e) e.stopPropagation();
+    const cartSidebar = document.getElementById('cart-sidebar');
+    if (cartSidebar) {
+        cartSidebar.classList.add('open');
+    }
+};
+
+window.sortMobileMenu = function(criteria, e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('mobile-filter-menu');
+    if (menu) menu.classList.add('hidden');
+    
+    let sortedItems = [...currentFilteredItems];
+    if (criteria === 'price-asc') {
+        sortedItems.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+    } else if (criteria === 'price-desc') {
+        sortedItems.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+    } else if (criteria === 'rating') {
+        sortedItems.sort((a, b) => parseFloat(b.avg_rating || 0) - parseFloat(a.avg_rating || 0));
+    } else {
+        const activeBtn = document.querySelector('.category-btn.active');
+        if (activeBtn) {
+            activeBtn.click();
+            return;
+        }
+    }
+    renderMenu(sortedItems);
+};
+
+// Global click handler to close dropdowns when clicking outside
+document.addEventListener('click', () => {
+    const catMenu = document.getElementById('mobile-category-menu');
+    const filterMenu = document.getElementById('mobile-filter-menu');
+    if (catMenu) catMenu.classList.add('hidden');
+    if (filterMenu) filterMenu.classList.add('hidden');
+});
+
+// Setup mobile search input key listener to sync with searchInputs
+document.addEventListener('DOMContentLoaded', () => {
+    const mobSearch = document.getElementById('mobile-search-input');
+    if (mobSearch) {
+        mobSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const searchInputs = document.querySelectorAll('.search-bar input, .hero-search-bar input');
+            searchInputs.forEach(inp => {
+                inp.value = e.target.value;
+            });
+            const filtered = menuData.filter(item => 
+                (item.name || '').toLowerCase().includes(query) || 
+                (item.description || '').toLowerCase().includes(query)
+            );
+            renderMenu(filtered);
+        });
+    }
+});

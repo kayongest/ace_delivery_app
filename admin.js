@@ -2243,11 +2243,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         ingCountBadge = '<span style="background:#fbebeb;color:#c42d2d;padding:4px 8px;border-radius:4px;font-size:12px;">No Recipe Mapped</span>';
                     }
 
+                    let portionsBadge = '';
+                    if (count === 0) {
+                        portionsBadge = '<span style="color:#8c9ea6; font-style:italic;">No recipe</span>';
+                    } else {
+                        const portions = menuItem.portions_remaining !== null ? parseInt(menuItem.portions_remaining) : 0;
+                        if (portions === 0) {
+                            portionsBadge = '<span style="color:#c42d2d; font-weight:bold; font-size:13px;">0 portions (Out of stock)</span>';
+                        } else if (portions <= 5) {
+                            portionsBadge = `<span style="color:#d97706; font-weight:bold; font-size:13px;">${portions} portions (Low)</span>`;
+                        } else {
+                            portionsBadge = `<span style="color:#28a745; font-weight:bold; font-size:13px;">${portions} portions</span>`;
+                        }
+                    }
+
                     row.innerHTML = `
                         <td style="padding: 12px 16px; font-weight:600;">${menuItem.name}</td>
                         <td style="padding: 12px 16px; text-transform:capitalize;">${menuItem.category}</td>
                         <td style="padding: 12px 16px; font-weight:bold;">RWF ${parseInt(menuItem.price).toLocaleString()}</td>
                         <td style="padding: 12px 16px;">${ingCountBadge}</td>
+                        <td style="padding: 12px 16px;">${portionsBadge}</td>
                         <td style="padding: 12px 16px; text-align: right;">
                             <button class="btn btn-secondary btn-sm" onclick="editRecipe(${menuItem.id}, '${menuItem.name.replace(/'/g, "\\'")}')" style="padding:4px 8px; font-size:12px; background:#1A3B47; color:white; border-color:#1A3B47;"><i class="ph ph-gear"></i> Set Recipe</button>
                         </td>
@@ -2401,6 +2416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchInventoryReports() {
         const stockTbody = document.getElementById('report-stock-list');
         const purchaseTbody = document.getElementById('report-purchase-list');
+        const portionsTbody = document.getElementById('report-portions-list');
         if (!stockTbody || !purchaseTbody) return;
 
         if ($.fn.DataTable.isDataTable('#reportStockTable')) {
@@ -2409,15 +2425,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if ($.fn.DataTable.isDataTable('#reportPurchaseTable')) {
             $('#reportPurchaseTable').DataTable().destroy();
         }
+        if ($.fn.DataTable.isDataTable('#reportPortionsTable')) {
+            $('#reportPortionsTable').DataTable().destroy();
+        }
 
         stockTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading stock report...</td></tr>';
         purchaseTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading shopping list...</td></tr>';
+        if (portionsTbody) {
+            portionsTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading menu portions...</td></tr>';
+        }
 
         try {
             const res = await fetch('api/admin_inventory.php?action=get_report');
             const result = await res.json();
             if (result.status === 'success') {
-                const { stock_report, shopping_list } = result.data;
+                const { stock_report, shopping_list, portions_report } = result.data;
                 
                 // Draw Remaining Stock Overview
                 stockTbody.innerHTML = '';
@@ -2481,6 +2503,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                // Draw Potential Menu Portions
+                if (portionsTbody && portions_report) {
+                    portionsTbody.innerHTML = '';
+                    if (portions_report.length === 0) {
+                        portionsTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No menu items found.</td></tr>';
+                    } else {
+                        portions_report.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid #eee';
+
+                            const count = parseInt(item.ingredient_count);
+                            let portionsDisplay = '';
+                            
+                            if (count === 0) {
+                                portionsDisplay = '<span style="color:#8c9ea6; font-style:italic;">No recipe mapped</span>';
+                            } else {
+                                const portions = item.portions_remaining !== null ? parseInt(item.portions_remaining) : 0;
+                                if (portions === 0) {
+                                    portionsDisplay = '<span style="color:#c42d2d; font-weight:bold; font-size:13px;">0 portions left (Out of stock)</span>';
+                                } else if (portions <= 5) {
+                                    portionsDisplay = `<span style="color:#d97706; font-weight:bold; font-size:13px;">${portions} portions left (Low stock)</span>`;
+                                } else {
+                                    portionsDisplay = `<span style="color:#28a745; font-weight:bold; font-size:13px;">${portions} portions left</span>`;
+                                }
+                            }
+
+                            const ingBadge = count > 0 
+                                ? `<span style="background:#e8f4fd;color:#007bff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold;">${count} Ingredients</span>`
+                                : '<span style="background:#fbebeb;color:#c42d2d;padding:2px 6px;border-radius:4px;font-size:11px;">No Recipe</span>';
+
+                            tr.innerHTML = `
+                                <td style="padding:10px 16px; font-weight:600;">${item.name}</td>
+                                <td style="padding:10px 16px; text-transform:capitalize;">${item.category}</td>
+                                <td style="padding:10px 16px; font-weight:bold;">RWF ${parseInt(item.price).toLocaleString()}</td>
+                                <td style="padding:10px 16px;">${ingBadge}</td>
+                                <td style="padding:10px 16px;">${portionsDisplay}</td>
+                            `;
+                            portionsTbody.appendChild(tr);
+                        });
+                    }
+                }
+
                 // Initialize DataTables
                 if (stock_report.length > 0) {
                     $('#reportStockTable').DataTable({
@@ -2500,6 +2564,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (shopping_list.length > 0) {
                     $('#reportPurchaseTable').DataTable({
+                        responsive: true,
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 25, 50],
+                        pagingType: 'simple_numbers',
+                        language: {
+                            search: "Search:",
+                            paginate: {
+                                previous: '<span style="font-weight: 700; font-family: monospace; font-size: 14px; margin-right: 2px;">&lt;</span>',
+                                next: '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>'
+                            }
+                        }
+                    });
+                }
+
+                if (portionsTbody && portions_report && portions_report.length > 0) {
+                    $('#reportPortionsTable').DataTable({
                         responsive: true,
                         pageLength: 5,
                         lengthMenu: [5, 10, 25, 50],
@@ -2571,6 +2651,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const dtControls = element.querySelectorAll('.dt-search, .dt-length, .dt-paging, .dt-info');
         dtControls.forEach(el => el.style.display = 'none');
         
+        // Expand all accordion panels temporarily for PDF generation
+        const collapsables = element.querySelectorAll('.accordion-collapse');
+        const buttons = element.querySelectorAll('.accordion-button');
+        const originalStates = [];
+        
+        collapsables.forEach((el, idx) => {
+            originalStates.push(el.classList.contains('show'));
+            el.classList.add('show');
+        });
+        buttons.forEach(btn => btn.classList.remove('collapsed'));
+        
         const opt = {
             margin:       [15, 15, 15, 15],
             filename:     `Ace_Cafe_Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`,
@@ -2583,10 +2674,30 @@ document.addEventListener('DOMContentLoaded', () => {
         html2pdf().set(opt).from(element).save().then(() => {
             showToast('PDF downloaded successfully!');
             dtControls.forEach(el => el.style.display = '');
+            collapsables.forEach((el, idx) => {
+                if (!originalStates[idx]) {
+                    el.classList.remove('show');
+                }
+            });
+            buttons.forEach((btn, idx) => {
+                if (!originalStates[idx]) {
+                    btn.classList.add('collapsed');
+                }
+            });
         }).catch(err => {
             console.error(err);
             showToast('Failed to generate PDF', 'error');
             dtControls.forEach(el => el.style.display = '');
+            collapsables.forEach((el, idx) => {
+                if (!originalStates[idx]) {
+                    el.classList.remove('show');
+                }
+            });
+            buttons.forEach((btn, idx) => {
+                if (!originalStates[idx]) {
+                    btn.classList.add('collapsed');
+                }
+            });
         });
     };
 
@@ -3063,4 +3174,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Custom Accordion Toggle Click Handler
+    $(document).on('click', '.accordion-button', function() {
+        const btn = $(this);
+        const targetSelector = btn.attr('data-bs-target');
+        const targetCollapse = $(targetSelector);
+        const parentId = btn.closest('.accordion').attr('id');
+        
+        if (targetCollapse.hasClass('show')) {
+            btn.addClass('collapsed');
+            targetCollapse.removeClass('show');
+        } else {
+            if (parentId) {
+                const accordion = $('#' + parentId);
+                accordion.find('.accordion-button').addClass('collapsed');
+                accordion.find('.accordion-collapse').removeClass('show');
+            }
+            
+            btn.removeClass('collapsed');
+            targetCollapse.addClass('show');
+        }
+        
+        // Force responsive DataTable alignment recalculation
+        setTimeout(() => {
+            $(window).trigger('resize');
+        }, 120);
+    });
 });

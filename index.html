@@ -42,6 +42,50 @@
 
     <!-- Main App Container -->
     <div id="app">
+        <!-- Mobile Storefront Header -->
+        <div class="mobile-storefront-header">
+            <button class="mobile-header-btn back-btn" onclick="goToDefaultCategory()" title="Back">
+                <i class="ph ph-caret-left"></i>
+            </button>
+            
+            <div class="mobile-category-dropdown" onclick="toggleMobileCategoryMenu(event)">
+                <span id="mobile-current-category-label">BURGER</span>
+                <i class="ph ph-caret-down" style="color: #ff7a00; font-size: 12px; margin-left: 4px;"></i>
+                
+                <div id="mobile-category-menu" class="mobile-dropdown-menu hidden">
+                    <!-- dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="mobile-header-right">
+                <button class="mobile-header-btn search-toggle" onclick="toggleMobileSearch(event)" title="Search">
+                    <i class="ph ph-magnifying-glass"></i>
+                </button>
+                <button class="mobile-header-btn cart-toggle" onclick="toggleCartSidebar(event)" style="position: relative;" title="Cart">
+                    <i class="ph ph-shopping-cart"></i>
+                    <span id="mobile-cart-count" class="cart-badge">0</span>
+                </button>
+                <button class="mobile-header-btn filter-toggle" onclick="toggleMobileFilter(event)" title="Sort/Filter">
+                    <i class="ph ph-sliders"></i>
+                </button>
+                <!-- Mobile Sort/Filter Dropdown Menu -->
+                <div id="mobile-filter-menu" class="mobile-dropdown-menu hidden">
+                    <div class="dropdown-item" onclick="sortMobileMenu('price-asc', event)">Price: Low to High</div>
+                    <div class="dropdown-item" onclick="sortMobileMenu('price-desc', event)">Price: High to Low</div>
+                    <div class="dropdown-item" onclick="sortMobileMenu('rating', event)">Top Rated</div>
+                    <div class="dropdown-item" onclick="sortMobileMenu('default', event)">Default</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expanded Mobile Search Bar -->
+        <div id="mobile-search-bar-expanded" class="mobile-search-bar-container hidden">
+            <div class="mobile-search-inner">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="mobile-search-input" placeholder="Search for menu items...">
+            </div>
+        </div>
+
         <!-- Top Navigation Bar -->
         <header class="navbar">
             <div class="nav-container">
@@ -141,6 +185,7 @@
                 <div class="pagination-container" id="pagination-container">
                     <!-- Populated by app.js -->
                 </div>
+
             </div>
         </main>
 

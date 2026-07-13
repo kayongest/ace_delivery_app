@@ -585,6 +585,7 @@ $isAdmin = $_SESSION['role'] === 'admin';
                                 <th style="padding: 12px 16px;">Category</th>
                                 <th style="padding: 12px 16px;">Price</th>
                                 <th style="padding: 12px 16px;">Ingredients Count</th>
+                                <th style="padding: 12px 16px;">Est. Portions Left</th>
                                 <th style="padding: 12px 16px; text-align: right;">Actions</th>
                             </tr>
                         </thead>
@@ -657,46 +658,94 @@ $isAdmin = $_SESSION['role'] === 'admin';
                 </div>
                 
                 <div id="printable-report-area">
-                    <!-- Report Part 1: Current Stock remaining -->
-                    <div class="card glass" style="padding: 20px; margin-bottom: 30px; overflow-x: auto;">
-                        <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Remaining Stock Overview</h4>
-                        <table id="reportStockTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
-                                    <th style="padding: 12px 16px;">Ingredient Name</th>
-                                    <th style="padding: 12px 16px;">Category</th>
-                                    <th style="padding: 12px 16px;">In Stock Quantity</th>
-                                    <th style="padding: 12px 16px;">Status</th>
-                                    <th style="padding: 12px 16px; color: #c42d2d;">Expired Quantity</th>
-                                    <th style="padding: 12px 16px; color: #d97706;">Expiring Soon (3 days)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="report-stock-list">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="accordion" id="reportAccordion">
+                        
+                        <!-- Remaining Stock Overview -->
+                        <div class="accordion-item card glass" style="margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                            <h2 class="accordion-header" id="headingStock">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStock" aria-expanded="true" aria-controls="collapseStock" style="font-family: inherit; font-size: 16px; font-weight: 700; color: #1A3B47;">
+                                    Remaining Stock Overview
+                                </button>
+                            </h2>
+                            <div id="collapseStock" class="accordion-collapse collapse show" aria-labelledby="headingStock" data-bs-parent="#reportAccordion">
+                                <div class="accordion-body" style="padding: 20px; overflow-x: auto;">
+                                    <table id="reportStockTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                                <th style="padding: 12px 16px;">Ingredient Name</th>
+                                                <th style="padding: 12px 16px;">Category</th>
+                                                <th style="padding: 12px 16px;">In Stock Quantity</th>
+                                                <th style="padding: 12px 16px;">Status</th>
+                                                <th style="padding: 12px 16px; color: #c42d2d;">Expired Quantity</th>
+                                                <th style="padding: 12px 16px; color: #d97706;">Expiring Soon (3 days)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-stock-list">
+                                            <!-- Populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Report Part 2: Restock / Purchase shopping list -->
-                    <div class="card glass" style="padding: 20px; overflow-x: auto;">
-                        <h4 style="margin: 0 0 15px 0; color: #1A3B47; border-bottom: 1px solid #eee; padding-bottom: 10px;">Purchase / restock Shopping List</h4>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">List of ingredients that are out of stock or have fallen below the configured reorder threshold.</p>
-                        <table id="reportPurchaseTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
-                                    <th style="padding: 12px 16px;">Ingredient Name</th>
-                                    <th style="padding: 12px 16px;">Category</th>
-                                    <th style="padding: 12px 16px;">In Stock</th>
-                                    <th style="padding: 12px 16px;">Reorder Level</th>
-                                    <th style="padding: 12px 16px;">Target Level</th>
-                                    <th style="padding: 12px 16px; font-weight: bold; color: #1A3B47;">Required Order Quantity</th>
-                                    <th style="padding: 12px 16px;">Priority</th>
-                                </tr>
-                            </thead>
-                            <tbody id="report-purchase-list">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
+                        <!-- Purchase / restock Shopping List -->
+                        <div class="accordion-item card glass" style="margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                            <h2 class="accordion-header" id="headingPurchase">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePurchase" aria-expanded="false" aria-controls="collapsePurchase" style="font-family: inherit; font-size: 16px; font-weight: 700; color: #1A3B47;">
+                                    Purchase / restock Shopping List
+                                </button>
+                            </h2>
+                            <div id="collapsePurchase" class="accordion-collapse collapse" aria-labelledby="headingPurchase" data-bs-parent="#reportAccordion">
+                                <div class="accordion-body" style="padding: 20px; overflow-x: auto;">
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">List of ingredients that are out of stock or have fallen below the configured reorder threshold.</p>
+                                    <table id="reportPurchaseTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                                <th style="padding: 12px 16px;">Ingredient Name</th>
+                                                <th style="padding: 12px 16px;">Category</th>
+                                                <th style="padding: 12px 16px;">In Stock</th>
+                                                <th style="padding: 12px 16px;">Reorder Level</th>
+                                                <th style="padding: 12px 16px;">Target Level</th>
+                                                <th style="padding: 12px 16px; font-weight: bold; color: #1A3B47;">Required Order Quantity</th>
+                                                <th style="padding: 12px 16px;">Priority</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-purchase-list">
+                                            <!-- Populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Potential Menu Portions from Current Stock -->
+                        <div class="accordion-item card glass" style="margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                            <h2 class="accordion-header" id="headingPortions">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePortions" aria-expanded="false" aria-controls="collapsePortions" style="font-family: inherit; font-size: 16px; font-weight: 700; color: #1A3B47;">
+                                    Potential Menu Portions from Current Stock
+                                </button>
+                            </h2>
+                            <div id="collapsePortions" class="accordion-collapse collapse" aria-labelledby="headingPortions" data-bs-parent="#reportAccordion">
+                                <div class="accordion-body" style="padding: 20px; overflow-x: auto;">
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Calculated maximum servings of menu items that can be prepared with currently available stock of ingredients.</p>
+                                    <table id="reportPortionsTable" class="display responsive nowrap" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                                                <th style="padding: 12px 16px;">Menu Item</th>
+                                                <th style="padding: 12px 16px;">Category</th>
+                                                <th style="padding: 12px 16px;">Price</th>
+                                                <th style="padding: 12px 16px;">Ingredients Mapped</th>
+                                                <th style="padding: 12px 16px;">Potential Portions Remaining</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-portions-list">
+                                            <!-- Populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
