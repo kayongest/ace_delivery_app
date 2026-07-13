@@ -1059,3 +1059,78 @@ body.dark-theme .servings-input {
         justify-content: center;
     }
 }
+
+/* Custom Users Pagination Styling */
+#users-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    gap: 15px;
+}
+#users-pagination button {
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color, #1A3B47) !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+#users-pagination button:hover:not(:disabled) {
+    background: rgba(26, 59, 71, 0.05) !important;
+}
+body.dark-theme #users-pagination button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+/* Previous & Next Buttons */
+#users-pagination button.dt-paging-button:first-child,
+#users-pagination button.dt-paging-button:last-child {
+    background: #f1f3f5 !important;
+    color: #8c9ea6 !important;
+}
+body.dark-theme #users-pagination button.dt-paging-button:first-child,
+body.dark-theme #users-pagination button.dt-paging-button:last-child {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #a5b4fc !important;
+}
+#users-pagination button.dt-paging-button:first-child:hover:not(:disabled),
+#users-pagination button.dt-paging-button:last-child:hover:not(:disabled) {
+    background: #e9ecef !important;
+    color: #1A3B47 !important;
+}
+body.dark-theme #users-pagination button.dt-paging-button:first-child:hover:not(:disabled),
+body.dark-theme #users-pagination button.dt-paging-button:last-child:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+#users-pagination button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: #f8f9fa !important;
+    color: #ccc !important;
+}
+body.dark-theme #users-pagination button:disabled {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #555 !important;
+}
+/* Active Page Number Button */
+#users-pagination button.dt-paging-button.current {
+    border: 1px solid rgba(26, 59, 71, 0.3) !important;
+    background: transparent !important;
+    color: #1A3B47 !important;
+}
+body.dark-theme #users-pagination button.dt-paging-button.current {
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    background: transparent !important;
+    color: #ffffff !important;
+}

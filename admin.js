@@ -1171,18 +1171,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    let currentUsersPage = 1;
+    const usersPerPage = 14;
+
     function renderUsers(users) {
         const grid = document.getElementById('admin-users-grid');
+        const paginationContainer = document.getElementById('users-pagination');
         if (!grid) return;
         grid.innerHTML = '';
         
-        users.forEach(u => {
+        const totalUsers = users.length;
+        const totalPages = Math.ceil(totalUsers / usersPerPage) || 1;
+
+        if (currentUsersPage > totalPages) {
+            currentUsersPage = totalPages;
+        }
+        if (currentUsersPage < 1) {
+            currentUsersPage = 1;
+        }
+
+        const startIndex = (currentUsersPage - 1) * usersPerPage;
+        const endIndex = Math.min(startIndex + usersPerPage, totalUsers);
+        const paginatedUsers = users.slice(startIndex, endIndex);
+
+        paginatedUsers.forEach(u => {
             const displayName = u.full_name || u.email;
             let avatarHtml = `<div class="user-avatar">No Img</div>`;
             if (u.profile_image) {
                 avatarHtml = `<img src="${u.profile_image}" class="user-avatar" alt="${displayName}">`;
             } else {
-                // Generate initials if no image
                 const initials = displayName.substring(0, 2).toUpperCase();
                 avatarHtml = `<div class="user-avatar">${initials}</div>`;
             }
@@ -1196,6 +1213,64 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             grid.appendChild(card);
         });
+
+        // Render custom pagination controls at the bottom
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            paginationContainer.style.display = 'flex';
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'dt-paging-button';
+            prevBtn.innerHTML = '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&lt;</span>';
+            prevBtn.disabled = currentUsersPage === 1;
+            if (currentUsersPage === 1) {
+                prevBtn.classList.add('disabled');
+            }
+            prevBtn.addEventListener('click', () => {
+                if (currentUsersPage > 1) {
+                    currentUsersPage--;
+                    renderUsers(users);
+                }
+            });
+            paginationContainer.appendChild(prevBtn);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'dt-paging-button';
+                if (i === currentUsersPage) {
+                    pageBtn.classList.add('current');
+                }
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentUsersPage = i;
+                    renderUsers(users);
+                });
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'dt-paging-button';
+            nextBtn.innerHTML = '<span style="font-weight: 700; font-family: monospace; font-size: 14px;">&gt;</span>';
+            nextBtn.disabled = currentUsersPage === totalPages;
+            if (currentUsersPage === totalPages) {
+                nextBtn.classList.add('disabled');
+            }
+            nextBtn.addEventListener('click', () => {
+                if (currentUsersPage < totalPages) {
+                    currentUsersPage++;
+                    renderUsers(users);
+                }
+            });
+            paginationContainer.appendChild(nextBtn);
+        }
     }
 
     // Search Users
@@ -1209,6 +1284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const emailMatch = (u.email || '').toLowerCase().includes(term);
                 return nameMatch || emailMatch;
             });
+            currentUsersPage = 1; // reset pagination on search
             renderUsers(filtered);
         });
     }

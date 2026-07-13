@@ -208,6 +208,11 @@ $isAdmin = $_SESSION['role'] === 'admin';
             <div id="admin-users-grid" class="users-grid">
                 <!-- Populated by admin.js -->
             </div>
+
+            <!-- Users Pagination Container -->
+            <div id="users-pagination" class="dt-paging paging_simple_numbers" style="display: flex; justify-content: center; align-items: center; margin-top: 25px; gap: 4px;">
+                <!-- Populated dynamically by admin.js -->
+            </div>
         </div>
 
         <!-- New User Management Modal -->
