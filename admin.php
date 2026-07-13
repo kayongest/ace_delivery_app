@@ -634,9 +634,13 @@ $isAdmin = $_SESSION['role'] === 'admin';
 
             <!-- Subtab 3: Reports -->
             <div id="inv-subtab-reports" class="inventory-subtab-pane" style="display: none;">
-                <div class="reports-header">
+                <div class="reports-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                     <h3>Stock & Purchase Reports</h3>
-                    <button class="btn btn-primary" onclick="printInventoryReport()" style="display: flex; align-items: center; gap: 8px; background: #1A3B47; border-color: #1A3B47;"><i class="ph ph-printer"></i> Print Report</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="printInventoryReport()" style="display: flex; align-items: center; gap: 6px; background: #1A3B47; border-color: #1A3B47;"><i class="ph ph-printer"></i> Print</button>
+                        <button class="btn btn-secondary" onclick="exportReportToPDF()" style="display: flex; align-items: center; gap: 6px; background: #c42d2d; border-color: #c42d2d; color: white;"><i class="ph ph-file-pdf"></i> PDF</button>
+                        <button class="btn btn-success" onclick="exportReportToExcel()" style="display: flex; align-items: center; gap: 6px; background: #28a745; border-color: #28a745; color: white;"><i class="ph ph-file-xls"></i> Excel</button>
+                    </div>
                 </div>
                 
                 <div id="printable-report-area">

@@ -2480,6 +2480,71 @@ document.addEventListener('DOMContentLoaded', () => {
         printWindow.document.close();
     };
 
+    // PDF Export Handler using html2pdf.js
+    window.exportReportToPDF = function() {
+        const element = document.getElementById('printable-report-area');
+        if (!element) return;
+        
+        const opt = {
+            margin:       [15, 15, 15, 15],
+            filename:     `Ace_Cafe_Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        showToast('Generating PDF...');
+        html2pdf().set(opt).from(element).save().then(() => {
+            showToast('PDF downloaded successfully!');
+        }).catch(err => {
+            console.error(err);
+            showToast('Failed to generate PDF', 'error');
+        });
+    };
+
+    // Excel Export Handler (CSV format with Excel UTF-8 BOM)
+    window.exportReportToExcel = function() {
+        const area = document.getElementById('printable-report-area');
+        if (!area) return;
+        
+        let csvContent = "";
+        
+        const sections = area.querySelectorAll('.card');
+        sections.forEach((section, secIdx) => {
+            const titleEl = section.querySelector('h4');
+            if (titleEl) {
+                csvContent += `"${titleEl.innerText.replace(/"/g, '""')}"\n\n`;
+            }
+            
+            const table = section.querySelector('table');
+            if (table) {
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const cols = row.querySelectorAll('th, td');
+                    const rowData = [];
+                    cols.forEach(col => {
+                        let text = col.innerText.trim();
+                        text = text.replace(/\r?\n|\r/g, " ");
+                        text = text.replace(/"/g, '""');
+                        rowData.push(`"${text}"`);
+                    });
+                    csvContent += rowData.join(",") + "\n";
+                });
+                csvContent += "\n\n";
+            }
+        });
+        
+        const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Ace_Cafe_Inventory_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Excel report exported successfully!');
+    };
+
     // ==========================================
     // BUFFET PLANNER & STOCK ALLOCATOR
     // ==========================================
